@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg-deep: #0f1117;
+  --color-bg-card: #1a1c24;
+  --color-bg-input: #1e2029;
+  --color-bg-surface: #14161d;
+  --color-text-primary: #f0ece4;
+  --color-text-secondary: #9b978f;
+  --color-text-tertiary: #6b6860;
+  --color-accent-gold: #c9a96e;
+  --color-accent-gold-dim: rgba(201, 169, 110, 0.15);
+  --color-accent-lunar: #8b9dc3;
+  --color-accent-lunar-dim: rgba(139, 157, 195, 0.12);
+  --color-accent-solar: #d4956b;
+  --color-accent-solar-dim: rgba(212, 149, 107, 0.12);
+  --color-accent-green: #7db88a;
+  --color-accent-red: #c97070;
+  --color-border-subtle: rgba(240, 236, 228, 0.06);
+  --color-border-card: rgba(240, 236, 228, 0.08);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg-deep);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }

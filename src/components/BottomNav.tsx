@@ -51,7 +51,9 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-bg-deep via-bg-deep/95 to-transparent pt-6 pb-[env(safe-area-inset-bottom,8px)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+      <div className="h-6 bg-gradient-to-t from-bg-deep to-transparent" />
+      <div className="bg-bg-deep pb-[env(safe-area-inset-bottom,8px)] pointer-events-auto">
       <div className="flex justify-around items-center max-w-lg mx-auto px-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -74,6 +76,7 @@ export default function BottomNav() {
         })}
       </div>
       <div className="w-[134px] h-[5px] bg-white/20 rounded-full mx-auto mt-2" />
+      </div>
     </nav>
   );
 }

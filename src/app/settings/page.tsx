@@ -109,6 +109,18 @@ export default function SettingsPage() {
         </div>
       </Section>
 
+      {/* Logout - 계정 바로 아래 */}
+      {user && (
+        <div className="px-5 -mt-4 mb-7">
+          <button
+            onClick={handleLogout}
+            className="w-full py-3 rounded-[14px] border border-border-card text-text-tertiary text-sm font-medium hover:bg-bg-card transition-colors"
+          >
+            로그아웃
+          </button>
+        </div>
+      )}
+
       {/* Notification Channels */}
       <Section label="알림 채널">
         {notificationChannels.map((ch) => (
@@ -197,18 +209,6 @@ export default function SettingsPage() {
           <span className="text-text-tertiary">›</span>
         </SettingItem>
       </Section>
-
-      {/* Logout */}
-      {user && (
-        <div className="px-5 mt-6 mb-8">
-          <button
-            onClick={handleLogout}
-            className="w-full py-3.5 rounded-[14px] border border-border-card text-text-tertiary text-sm font-medium hover:bg-bg-card transition-colors relative z-10"
-          >
-            로그아웃
-          </button>
-        </div>
-      )}
 
       <BottomNav />
     </div>

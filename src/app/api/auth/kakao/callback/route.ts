@@ -38,6 +38,8 @@ export async function GET(request: Request) {
   const tokenData = await tokenRes.json();
 
   if (!tokenData.access_token) {
+    console.error('[kakao-auth] token exchange failed:', JSON.stringify(tokenData));
+    console.error('[kakao-auth] redirect_uri used:', redirectUri);
     return NextResponse.redirect(`${origin}/login?error=kakao_token_failed`);
   }
 
@@ -116,6 +118,7 @@ export async function GET(request: Request) {
     });
 
     if (createError) {
+      console.error('[kakao-auth] user creation failed:', createError.message);
       return NextResponse.redirect(`${origin}/login?error=create_failed`);
     }
 

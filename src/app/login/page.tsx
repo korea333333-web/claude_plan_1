@@ -6,13 +6,14 @@ export default function LoginPage() {
   const supabase = createClient();
 
   const handleLogin = async (provider: 'kakao' | 'google') => {
+    if (provider === 'kakao') {
+      window.location.href = '/api/auth/kakao';
+      return;
+    }
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        ...(provider === 'kakao' && {
-          scopes: 'profile_nickname profile_image',
-        }),
       },
     });
   };

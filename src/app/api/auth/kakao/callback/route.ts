@@ -38,9 +38,8 @@ export async function GET(request: Request) {
   const tokenData = await tokenRes.json();
 
   if (!tokenData.access_token) {
-    console.error('[kakao-auth] token exchange failed:', JSON.stringify(tokenData));
-    console.error('[kakao-auth] redirect_uri used:', redirectUri);
-    return NextResponse.redirect(`${origin}/login?error=kakao_token_failed`);
+    const detail = encodeURIComponent(JSON.stringify({ kakao: tokenData, uri: redirectUri }));
+    return NextResponse.redirect(`${origin}/login?error=kakao_token_failed&detail=${detail}`);
   }
 
   // 2. Get user info from Kakao

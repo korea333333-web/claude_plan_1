@@ -92,14 +92,17 @@ export default function SettingsPage() {
 
       {/* Account */}
       <Section label="계정">
-        <div className="flex items-center gap-3.5 px-4 py-4">
+        <div
+          className={`flex items-center gap-3.5 px-4 py-4 ${!user ? 'cursor-pointer' : ''}`}
+          onClick={() => { if (!user) router.push('/login'); }}
+        >
           <div className="w-11 h-11 rounded-full bg-gradient-to-br from-accent-gold to-accent-lunar flex items-center justify-center text-lg font-semibold text-bg-deep">
             {initials}
           </div>
           <div className="flex-1">
             <div className="text-[15px] font-semibold">{user?.name || '로그인 필요'}</div>
             <div className="text-xs text-text-tertiary">
-              {user ? `${user.provider === 'kakao' ? '카카오' : '구글'} 로그인` : ''}
+              {user ? `${user.provider === 'kakao' ? '카카오' : '구글'} 로그인` : '탭하여 로그인'}
             </div>
           </div>
           <span className="text-text-tertiary">›</span>
@@ -197,10 +200,10 @@ export default function SettingsPage() {
 
       {/* Logout */}
       {user && (
-        <div className="px-5 mt-6">
+        <div className="px-5 mt-6 mb-8">
           <button
             onClick={handleLogout}
-            className="w-full py-3.5 rounded-[14px] border border-border-card text-text-tertiary text-sm font-medium hover:bg-bg-card transition-colors"
+            className="w-full py-3.5 rounded-[14px] border border-border-card text-text-tertiary text-sm font-medium hover:bg-bg-card transition-colors relative z-10"
           >
             로그아웃
           </button>

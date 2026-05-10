@@ -11,7 +11,7 @@ export default function LoginPage() {
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
         ...(provider === 'kakao' && {
-          scopes: 'profile_nickname',
+          scopes: 'profile_nickname profile_image',
         }),
       },
     });

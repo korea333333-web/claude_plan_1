@@ -18,13 +18,12 @@
   --color-accent-red: #c97070;
   --color-border-subtle: rgba(240, 236, 228, 0.06);
   --color-border-card: rgba(240, 236, 228, 0.08);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-noto-sans-kr);
 }
 
 body {
   background: var(--color-bg-deep);
   color: var(--color-text-primary);
-  font-family: var(--font-sans), -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans), 'Noto Sans KR', -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }

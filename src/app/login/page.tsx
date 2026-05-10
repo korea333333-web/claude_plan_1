@@ -36,10 +36,10 @@ export default function LoginPage() {
           }}
         />
 
-        <h1 className="text-3xl font-light tracking-tight mb-2">
+        <h1 className="text-[32px] font-light tracking-[-0.5px] mb-2">
           <span className="text-accent-gold font-medium">달</span>새김
         </h1>
-        <p className="text-text-secondary text-[15px] leading-relaxed mb-14">
+        <p className="text-text-secondary text-[15px] leading-relaxed mb-[60px]">
           소중한 날을 달에 새기다
           <br />
           음력 기념일, 이제 놓치지 마세요
@@ -70,7 +70,7 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <p className="text-center text-[11px] text-text-tertiary pb-12 relative z-10">
+      <p className="text-center text-[11px] text-text-tertiary pb-[50px] relative z-10">
         로그인 시 이용약관 및 개인정보처리방침에 동의합니다
       </p>
     </div>

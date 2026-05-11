@@ -1,7 +1,7 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/[email protected]/dist/web/static/pretendard.css');
 @import "tailwindcss";
 
-@theme inline {
+@theme {
   --color-bg-deep: #0a0d14;
   --color-bg-card: rgba(255,255,255,0.025);
   --color-bg-card-strong: rgba(255,255,255,0.06);

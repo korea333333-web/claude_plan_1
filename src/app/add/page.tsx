@@ -35,8 +35,13 @@ export default function AddPage() {
   const [repeatType, setRepeatType] = useState<RepeatType>('yearly');
   const [startYear, setStartYear] = useState('');
   const [isShared, setIsShared] = useState(false);
-  const [alarms, setAlarms] = useState([true, true, true]);
+  const [alarms, setAlarms] = useState([
+    { enabled: true, daysBefore: 7, hour: 9, minute: 0 },
+    { enabled: true, daysBefore: 3, hour: 9, minute: 0 },
+    { enabled: true, daysBefore: 0, hour: 9, minute: 0 },
+  ]);
   const [saving, setSaving] = useState(false);
+  const dayOptions = [0, 1, 2, 3, 5, 7, 14, 30];
 
   async function handleSave() {
     if (!name) return;
@@ -60,6 +65,7 @@ export default function AddPage() {
       start_year: startYear ? parseInt(startYear) : null,
       is_shared: isShared,
       is_leap_month: false,
+      alarms,
     });
 
     if (error) {
@@ -70,8 +76,6 @@ export default function AddPage() {
     }
     setSaving(false);
   }
-
-  const alarmLabels = ['7일 전', '3일 전', '당일'];
 
   return (
     <div className="min-h-dvh bg-bg-deep pb-28">
@@ -179,28 +183,53 @@ export default function AddPage() {
         {/* Alarms */}
         <FormField label="알림">
           <div className="space-y-2">
-            {alarmLabels.map((label, i) => (
-              <div key={label} className="flex items-center justify-between px-4 py-3 bg-bg-card-strong border border-border-strong rounded-xl">
-                <span className="text-[13px] text-text-secondary">{label}</span>
+            {alarms.map((alarm, i) => (
+              <div key={i} className="flex items-center gap-2.5 px-3.5 py-3 bg-bg-card-strong border border-border-strong rounded-xl">
+                <span className="text-[10px] text-accent-gold-soft font-bold w-5 shrink-0">{i + 1}차</span>
+                <select
+                  value={alarm.daysBefore}
+                  onChange={(e) => {
+                    const next = [...alarms];
+                    next[i] = { ...next[i], daysBefore: parseInt(e.target.value) };
+                    setAlarms(next);
+                  }}
+                  disabled={!alarm.enabled}
+                  className="flex-1 bg-bg-card border border-border-strong rounded-lg px-2.5 py-2 text-[12px] text-text-primary outline-none disabled:opacity-40"
+                >
+                  {dayOptions.map((d) => (
+                    <option key={d} value={d}>{d === 0 ? '당일' : `${d}일 전`}</option>
+                  ))}
+                </select>
+                <input
+                  type="time"
+                  value={`${String(alarm.hour).padStart(2, '0')}:${String(alarm.minute).padStart(2, '0')}`}
+                  onChange={(e) => {
+                    const [h, m] = e.target.value.split(':').map(Number);
+                    const next = [...alarms];
+                    next[i] = { ...next[i], hour: h || 0, minute: m || 0 };
+                    setAlarms(next);
+                  }}
+                  disabled={!alarm.enabled}
+                  className="w-[88px] bg-bg-card border border-border-strong rounded-lg px-2.5 py-2 text-[12px] text-text-primary outline-none disabled:opacity-40"
+                />
                 <button
                   onClick={() => {
                     const next = [...alarms];
-                    next[i] = !next[i];
+                    next[i] = { ...next[i], enabled: !next[i].enabled };
                     setAlarms(next);
                   }}
-                  className={`w-11 h-[26px] rounded-full relative transition-colors ${
-                    alarms[i] ? 'bg-accent-gold' : 'bg-text-tertiary'
+                  className={`w-10 h-[24px] rounded-full relative transition-colors shrink-0 ${
+                    alarm.enabled ? 'bg-accent-gold' : 'bg-text-tertiary'
                   }`}
                 >
-                  <div
-                    className={`w-5 h-5 rounded-full bg-white absolute top-[3px] transition-transform ${
-                      alarms[i] ? 'translate-x-[21px]' : 'translate-x-[3px]'
-                    }`}
-                  />
+                  <div className={`w-[18px] h-[18px] rounded-full bg-white absolute top-[3px] transition-transform ${
+                    alarm.enabled ? 'translate-x-[19px]' : 'translate-x-[3px]'
+                  }`} />
                 </button>
               </div>
             ))}
           </div>
+          <p className="text-[10px] text-text-tertiary mt-2 text-center">기본 오전 9시 · 날짜와 시간 변경 가능</p>
         </FormField>
 
         {/* Share */}

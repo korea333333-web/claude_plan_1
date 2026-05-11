@@ -35,10 +35,11 @@ export default function SettingsPage() {
     // 1. Check Supabase auth (Google)
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (authUser) {
+      const prov = authUser.user_metadata?.provider || authUser.app_metadata?.provider;
       setUser({
         name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '사용자',
         email: authUser.email || '',
-        provider: 'google',
+        provider: prov === 'kakao' ? 'kakao' : 'google',
         avatarUrl: authUser.user_metadata?.avatar_url,
       });
       return;

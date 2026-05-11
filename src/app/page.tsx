@@ -31,9 +31,10 @@ export default function HomePage() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
+      const prov = user.user_metadata?.provider || user.app_metadata?.provider;
       setAuthUser({
         name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '사용자',
-        provider: 'google',
+        provider: prov === 'kakao' ? 'kakao' : 'google',
         avatarUrl: user.user_metadata?.avatar_url,
       });
       await loadAnniversaries(user.id);

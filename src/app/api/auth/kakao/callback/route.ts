@@ -1,6 +1,9 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createSessionValue, COOKIE_NAME } from '@/lib/kakao-session';
+import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import crypto from 'crypto';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,7 +16,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=kakao_denied`);
   }
 
-  // Verify CSRF state
   const cookieStore = await cookies();
   const savedState = cookieStore.get('kakao_oauth_state')?.value;
   if (!state || state !== savedState) {
@@ -22,7 +24,6 @@ export async function GET(request: Request) {
 
   const redirectUri = `${origin}/api/auth/kakao/callback`;
 
-  // 1. Exchange code for Kakao access token
   const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -42,7 +43,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=kakao_token_failed`);
   }
 
-  // 2. Get user info from Kakao
   const userRes = await fetch('https://kapi.kakao.com/v2/user/me', {
     headers: { Authorization: `Bearer ${tokenData.access_token}` },
   });
@@ -62,7 +62,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=kakao_user_failed`);
   }
 
-  // 3. Create self-managed session cookie
   const sessionValue = createSessionValue({
     kakaoId: String(kakaoId),
     nickname,
@@ -79,12 +78,70 @@ export async function GET(request: Request) {
     maxAge: 7 * 24 * 60 * 60,
   });
 
-  // Clean up state cookie
   response.cookies.set('kakao_oauth_state', '', {
     httpOnly: true,
     path: '/',
     maxAge: 0,
   });
+
+  // Supabase 사용자 생성 + 세션 설정 (데이터 저장을 위해 필요)
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      );
+
+      const email = `kakao_${kakaoId}@dalsaegim.app`;
+      const password = crypto
+        .createHmac('sha256', process.env.KAKAO_SESSION_SECRET!)
+        .update(`kakao_${kakaoId}`)
+        .digest('hex');
+
+      const supabaseServer = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return cookieStore.getAll();
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                response.cookies.set(name, value, options);
+              });
+            },
+          },
+        }
+      );
+
+      const { error: signInError } = await supabaseServer.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        await supabaseAdmin.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: true,
+          user_metadata: {
+            full_name: nickname,
+            avatar_url: profileImage,
+            provider: 'kakao',
+            kakao_id: String(kakaoId),
+          },
+        });
+
+        await supabaseServer.auth.signInWithPassword({
+          email,
+          password,
+        });
+      }
+    } catch (err) {
+      console.error('[kakao-auth] Supabase user creation failed:', err);
+    }
+  }
 
   return response;
 }

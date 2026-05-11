@@ -73,9 +73,12 @@ export function useAuth() {
           const refreshRes = await fetch('/api/auth/refresh-session', { method: 'POST' });
           const refreshData = await refreshRes.json();
 
-          if (refreshData.success && refreshData.userId) {
-            // 복구 성공! 클라이언트 세션도 갱신
-            await supabase.auth.getSession();
+          if (refreshData.success && refreshData.userId && refreshData.access_token) {
+            // 토큰으로 클라이언트 Supabase 세션 직접 세팅
+            await supabase.auth.setSession({
+              access_token: refreshData.access_token,
+              refresh_token: refreshData.refresh_token,
+            });
 
             setAuth({
               userId: refreshData.userId,

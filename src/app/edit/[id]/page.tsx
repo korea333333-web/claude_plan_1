@@ -17,7 +17,6 @@ const categories: { value: Category; label: string }[] = [
 
 const repeatTypes: { value: RepeatType; label: string }[] = [
   { value: 'yearly', label: '매년' },
-  { value: 'monthly', label: '매달' },
   { value: 'once', label: '일회성' },
 ];
 

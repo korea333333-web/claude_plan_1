@@ -52,7 +52,7 @@ export default function LoginPage() {
         <h1 className="text-[40px] font-black tracking-[-2px] leading-none mb-2">
           달새김
         </h1>
-        <p className="text-text-secondary text-[15px] leading-relaxed mb-[60px]">
+        <p className="text-text-secondary text-[17px] leading-relaxed mb-[60px]">
           소중한 날을 달에 새기다
           <br />
           음력 기념일, 이제 놓치지 마세요
@@ -60,10 +60,10 @@ export default function LoginPage() {
 
         <button
           onClick={() => handleLogin('kakao')}
-          className="flex items-center justify-center gap-2.5 w-full py-4 rounded-[14px] text-[15px] font-medium mb-3 cursor-pointer transition-opacity hover:opacity-90"
+          className="flex items-center justify-center gap-2.5 w-full py-4 rounded-[14px] text-[17px] font-medium mb-3 cursor-pointer transition-opacity hover:opacity-90"
           style={{ background: '#FEE500', color: '#191919' }}
         >
-          <svg width="20" height="20" viewBox="0 0 20 20">
+          <svg width="22" height="22" viewBox="0 0 20 20">
             <path d="M10 3C5.58 3 2 5.87 2 9.35c0 2.2 1.45 4.13 3.63 5.25-.16.58-.58 2.1-.67 2.43-.1.4.15.4.31.29.13-.08 2.03-1.38 2.85-1.95.61.09 1.24.13 1.88.13 4.42 0 8-2.87 8-6.35S14.42 3 10 3z" fill="#191919" />
           </svg>
           카카오로 시작하기
@@ -71,9 +71,9 @@ export default function LoginPage() {
 
         <button
           onClick={() => handleLogin('google')}
-          className="flex items-center justify-center gap-2.5 w-full py-4 rounded-[14px] text-[15px] font-medium cursor-pointer border border-border-strong text-text-primary bg-bg-card-strong transition-opacity hover:opacity-90"
+          className="flex items-center justify-center gap-2.5 w-full py-4 rounded-[14px] text-[17px] font-medium cursor-pointer border border-border-strong text-text-primary bg-bg-card-strong transition-opacity hover:opacity-90"
         >
-          <svg width="18" height="18" viewBox="0 0 18 18">
+          <svg width="20" height="20" viewBox="0 0 18 18">
             <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4" />
             <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853" />
             <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05" />
@@ -83,7 +83,7 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <p className="text-center text-[11px] text-text-tertiary pb-[50px] relative z-10">
+      <p className="text-center text-[13px] text-text-tertiary pb-[50px] relative z-10">
         로그인 시 이용약관 및 개인정보처리방침에 동의합니다
       </p>
     </div>

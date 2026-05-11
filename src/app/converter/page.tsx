@@ -90,7 +90,7 @@ export default function ConverterPage() {
       {/* Header */}
       <div className="px-6 pt-[env(safe-area-inset-top,16px)] pb-5">
         <h1 className="text-[34px] font-extrabold tracking-[-1.5px] leading-none pt-4">변환</h1>
-        <p className="text-[11px] text-text-secondary mt-1.5">음력과 양력을 자유롭게 오가기</p>
+        <p className="text-[14px] text-text-secondary mt-2">음력과 양력을 자유롭게 오가기</p>
       </div>
 
       {/* Direction toggle */}
@@ -98,19 +98,19 @@ export default function ConverterPage() {
         <div className="flex bg-bg-card border border-border-strong rounded-full p-1">
           <button
             onClick={() => { setMode('lunarToSolar'); setResult(null); }}
-            className={`flex-1 py-2.5 rounded-full text-[12px] font-medium text-center flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-3 rounded-full text-[15px] font-medium text-center flex items-center justify-center gap-2 transition-all ${
               mode === 'lunarToSolar' ? 'bg-accent-gold text-bg-deep font-bold' : 'text-text-secondary'
             }`}
           >
-            음 <span className="text-[10px]">→</span> 양
+            음 <span className="text-[13px]">→</span> 양
           </button>
           <button
             onClick={() => { setMode('solarToLunar'); setResult(null); }}
-            className={`flex-1 py-2.5 rounded-full text-[12px] font-medium text-center flex items-center justify-center gap-1.5 transition-all ${
+            className={`flex-1 py-3 rounded-full text-[15px] font-medium text-center flex items-center justify-center gap-2 transition-all ${
               mode === 'solarToLunar' ? 'bg-accent-gold text-bg-deep font-bold' : 'text-text-secondary'
             }`}
           >
-            양 <span className="text-[10px]">→</span> 음
+            양 <span className="text-[13px]">→</span> 음
           </button>
         </div>
       </div>
@@ -121,27 +121,27 @@ export default function ConverterPage() {
           ? 'bg-[rgba(201,169,110,0.06)] border-[rgba(201,169,110,0.3)]'
           : 'bg-[rgba(139,157,195,0.06)] border-[rgba(139,157,195,0.3)]'
       }`}>
-        <div className="flex justify-between items-center mb-3.5">
-          <div className={`flex items-center gap-2 text-[11px] font-bold tracking-[2px] ${isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>
+        <div className="flex justify-between items-center mb-4">
+          <div className={`flex items-center gap-2 text-[14px] font-bold tracking-[1.5px] ${isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>
             <span className={`w-[7px] h-[7px] ${isLunarInput ? 'bg-accent-gold' : 'bg-accent-solar'}`} />
             {inputLabel}
           </div>
-          <button onClick={handleToday} className="text-[11px] text-text-secondary">오늘</button>
+          <button onClick={handleToday} className="text-[14px] text-text-secondary">오늘</button>
         </div>
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-3">
           {[
             { label: '년', value: year, setter: setYear },
             { label: '월', value: month, setter: setMonth },
             { label: '일', value: day, setter: setDay },
           ].map((f) => (
             <div key={f.label}>
-              <div className="text-[10px] text-text-tertiary tracking-[1px] mb-1">{f.label}</div>
+              <div className="text-[13px] text-text-tertiary tracking-[1px] mb-1.5">{f.label}</div>
               <div className="bg-bg-card border border-border-strong rounded-lg">
                 <input
                   type="number"
                   value={f.value}
                   onChange={(e) => f.setter(e.target.value)}
-                  className="w-full text-center text-[18px] font-bold tracking-[-0.5px] bg-transparent outline-none text-text-primary py-3 px-2"
+                  className="w-full text-center text-[22px] font-bold tracking-[-0.5px] bg-transparent outline-none text-text-primary py-3.5 px-2"
                 />
               </div>
             </div>
@@ -150,13 +150,13 @@ export default function ConverterPage() {
       </div>
 
       {/* Swap */}
-      <div className="relative text-center py-3.5">
+      <div className="relative text-center py-4">
         <div className="absolute top-1/2 left-6 right-6 h-[0.5px] bg-border-subtle" />
         <button
           onClick={handleSwap}
-          className="relative w-10 h-10 rounded-full bg-bg-deep border border-accent-gold-dim inline-flex items-center justify-center text-accent-gold"
+          className="relative w-11 h-11 rounded-full bg-bg-deep border border-accent-gold-dim inline-flex items-center justify-center text-accent-gold"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 014-4h14" />
             <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 01-4 4H3" />
           </svg>
@@ -169,8 +169,8 @@ export default function ConverterPage() {
           ? 'bg-[rgba(201,169,110,0.06)] border-[rgba(201,169,110,0.3)]'
           : 'bg-[rgba(139,157,195,0.06)] border-[rgba(139,157,195,0.3)]'
       }`}>
-        <div className="flex justify-between items-center mb-3.5">
-          <div className={`flex items-center gap-2 text-[11px] font-bold tracking-[2px] ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>
+        <div className="flex justify-between items-center mb-4">
+          <div className={`flex items-center gap-2 text-[14px] font-bold tracking-[1.5px] ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>
             <span className={`w-[7px] h-[7px] ${!isLunarInput ? 'bg-accent-gold' : 'bg-accent-solar'}`} />
             {outputLabel}
           </div>
@@ -184,10 +184,10 @@ export default function ConverterPage() {
               <span className={`text-[28px] opacity-55 font-light ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>.</span>
               <span className={`text-[42px] font-bold tracking-[-1.8px] leading-none ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>{outputDate.day}</span>
             </div>
-            {outputMeta && <p className="text-[12px] text-text-secondary mt-1">{outputMeta}</p>}
+            {outputMeta && <p className="text-[15px] text-text-secondary mt-1.5">{outputMeta}</p>}
           </>
         ) : (
-          <p className="text-text-tertiary text-[13px] py-6 text-center">변환 버튼을 눌러주세요</p>
+          <p className="text-text-tertiary text-[16px] py-6 text-center">변환 버튼을 눌러주세요</p>
         )}
       </div>
 
@@ -196,14 +196,14 @@ export default function ConverterPage() {
         <button
           onClick={handleConvert}
           disabled={!month || !day}
-          className="w-full py-4 rounded-full bg-accent-gold text-bg-deep text-base font-bold disabled:opacity-40 transition-opacity"
+          className="w-full py-4 rounded-full bg-accent-gold text-bg-deep text-[17px] font-bold disabled:opacity-40 transition-opacity"
         >
           변환하기
         </button>
       </div>
 
       {error && (
-        <div className="mx-6 mt-4 p-4 bg-accent-red/10 border border-accent-red/20 rounded-2xl text-center text-sm text-accent-red">
+        <div className="mx-6 mt-4 p-4 bg-accent-red/10 border border-accent-red/20 rounded-2xl text-center text-[15px] text-accent-red">
           {error}
         </div>
       )}

@@ -24,6 +24,21 @@
   --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/*
+  Typography Scale (글씨 크기 비율 체계)
+  T1  12px — 최소: 캘린더 그리드, 작은 배지
+  T2  13px — 라벨, 메타 정보
+  T3  14px — 보조 본문, 설명
+  T4  15px — 기본 본문
+  T5  16px — 강조 본문, 이벤트 이름
+  T6  18px — 소제목, 버튼 텍스트
+  T7  20px — D-day 숫자, 중요 데이터
+  T8  24px — 큰 날짜 숫자
+  T9  28px — 디스플레이 숫자
+  T10 34px — 페이지 제목
+  T11 42px — 히어로 숫자
+*/
+
 body {
   background: var(--color-bg-deep);
   color: var(--color-text-primary);

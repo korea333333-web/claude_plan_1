@@ -132,7 +132,6 @@ export default function CalendarPage() {
     <div className="min-h-dvh bg-bg-deep pb-28">
       {/* Header */}
       <div className="px-6 pt-[env(safe-area-inset-top,16px)] pb-0">
-        {/* Title row */}
         <div className="flex items-baseline justify-between pt-4 mb-1.5">
           <div className="flex items-baseline gap-2 relative">
             <button
@@ -140,19 +139,19 @@ export default function CalendarPage() {
               className="flex items-baseline gap-2"
             >
               <h1 className="text-[34px] font-extrabold tracking-[-1.5px] leading-none">{titleText}</h1>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
             {showDropdown && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowDropdown(false)} />
-                <div className="absolute top-full left-0 mt-2 z-40 bg-bg-card-strong border border-border-strong rounded-xl py-1.5 min-w-[160px] shadow-lg">
+                <div className="absolute top-full left-0 mt-2 z-40 bg-bg-card-strong border border-border-strong rounded-xl py-1.5 min-w-[180px] shadow-lg">
                   {viewLabels.map(v => (
                     <button
                       key={v.key}
                       onClick={() => { setView(v.key); setShowDropdown(false); }}
-                      className={`w-full text-left px-4 py-2.5 text-[13px] ${
+                      className={`w-full text-left px-4 py-3 text-[16px] ${
                         view === v.key
                           ? 'text-accent-gold font-bold'
                           : 'text-text-secondary'
@@ -165,19 +164,19 @@ export default function CalendarPage() {
               </>
             )}
           </div>
-          {rightText && <span className="text-[11px] text-text-tertiary">{rightText}</span>}
+          {rightText && <span className="text-[14px] text-text-tertiary">{rightText}</span>}
         </div>
-        <p className="text-[10px] text-text-tertiary mb-4">{subtitleText}</p>
+        <p className="text-[14px] text-text-tertiary mb-4">{subtitleText}</p>
 
         {/* Sub-nav tabs */}
-        <div className="flex gap-3.5 border-b border-border-subtle">
+        <div className="flex gap-4 border-b border-border-subtle">
           {viewLabels.map(v => (
             <button
               key={v.key}
               onClick={() => setView(v.key)}
-              className={`text-[11px] pb-2.5 transition-all ${
+              className={`text-[15px] pb-3 transition-all ${
                 view === v.key
-                  ? 'text-accent-gold font-bold border-b-[1.5px] border-accent-gold'
+                  ? 'text-accent-gold font-bold border-b-[2px] border-accent-gold'
                   : 'text-text-tertiary'
               }`}
             >
@@ -224,25 +223,25 @@ function ThisMonthView({
   return (
     <>
       {/* Month nav */}
-      <div className="flex items-center justify-between px-6 pt-3 pb-1">
-        <button onClick={prevMonth} className="p-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
+      <div className="flex items-center justify-between px-6 pt-4 pb-2">
+        <button onClick={prevMonth} className="p-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-        <span className="text-[12px] text-text-secondary font-medium">{year}년 {month + 1}월</span>
-        <button onClick={nextMonth} className="p-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
+        <span className="text-[16px] text-text-secondary font-medium">{year}년 {month + 1}월</span>
+        <button onClick={nextMonth} className="p-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
       </div>
 
       {/* Mini calendar grid */}
-      <div className="px-6 pt-1 pb-2">
-        <div className="grid grid-cols-7 mb-1">
+      <div className="px-5 pt-1 pb-2">
+        <div className="grid grid-cols-7 mb-2">
           {weekdays.map((wd, i) => (
-            <div key={wd} className={`text-center text-[8px] py-0.5 ${i === 0 ? 'text-accent-red/60' : 'text-text-tertiary/50'}`}>
+            <div key={wd} className={`text-center text-[13px] py-1 font-medium ${i === 0 ? 'text-accent-red/70' : 'text-text-tertiary'}`}>
               {wd}
             </div>
           ))}
@@ -254,18 +253,18 @@ function ThisMonthView({
             const todayHighlight = cell.inMonth && isToday(cell.day);
 
             return (
-              <div key={i} className="text-center py-[3px] relative">
-                <span className={`text-[9px] inline-block leading-none ${
-                  !cell.inMonth ? 'text-text-tertiary/20' :
-                  todayHighlight ? 'text-accent-gold font-bold bg-accent-gold-dim rounded px-1 py-0.5' :
+              <div key={i} className="text-center py-[5px] relative">
+                <span className={`text-[14px] inline-block leading-none ${
+                  !cell.inMonth ? 'text-text-tertiary/25' :
+                  todayHighlight ? 'text-accent-gold font-bold bg-accent-gold-dim rounded-md px-1.5 py-1' :
                   event?.date_type === 'lunar' ? 'text-accent-gold font-bold' :
                   event?.date_type === 'solar' ? 'text-accent-solar font-bold' :
-                  isSunday ? 'text-accent-red/60' : 'text-text-secondary/70'
+                  isSunday ? 'text-accent-red/70' : 'text-text-secondary'
                 }`}>
                   {cell.day}
                 </span>
                 {event && cell.inMonth && (
-                  <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-[3px] h-[3px] rounded-full ${
+                  <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full ${
                     event.date_type === 'lunar' ? 'bg-accent-gold' : 'bg-accent-solar'
                   }`} />
                 )}
@@ -276,10 +275,10 @@ function ThisMonthView({
       </div>
 
       {/* Event list */}
-      <div className="px-5 pt-2 border-t-[0.5px] border-border-subtle mt-1">
+      <div className="px-5 pt-3 border-t-[0.5px] border-border-subtle mt-2">
         {monthEvents.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-text-tertiary text-[13px]">이번 달 기념일이 없습니다</p>
+          <div className="text-center py-14">
+            <p className="text-text-tertiary text-[16px]">이번 달 기념일이 없습니다</p>
           </div>
         ) : (
           monthEvents.map((ann) => {
@@ -289,28 +288,28 @@ function ThisMonthView({
             const isClose = ann.dday <= 14;
 
             return (
-              <div key={ann.id} className="flex gap-2.5 py-3 border-b-[0.5px] border-border-subtle last:border-b-0 items-center">
-                <div className="text-center shrink-0 px-1 w-[34px]">
-                  <div className="text-[9px] text-text-tertiary leading-none mb-0.5">{wd}</div>
-                  <div className={`text-[22px] font-bold tracking-[-1px] leading-none ${
+              <div key={ann.id} className="flex gap-3 py-3.5 border-b-[0.5px] border-border-subtle last:border-b-0 items-center">
+                <div className="text-center shrink-0 w-[40px]">
+                  <div className="text-[13px] text-text-tertiary leading-none mb-1">{wd}</div>
+                  <div className={`text-[28px] font-bold tracking-[-1px] leading-none ${
                     isLunar ? 'text-accent-gold' : 'text-accent-solar'
                   }`}>
                     {nd.getDate()}
                   </div>
                 </div>
-                <div className={`w-[2.5px] self-stretch rounded-sm shrink-0 ${
+                <div className={`w-[3px] self-stretch rounded-sm shrink-0 ${
                   isLunar ? 'bg-accent-gold' : 'bg-accent-solar'
-                }`} style={{ minHeight: '36px' }} />
+                }`} style={{ minHeight: '40px' }} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[13px] font-semibold">{ann.name}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[16px] font-semibold">{ann.name}</span>
                     {ann.count_label && (
-                      <span className={`text-[10px] font-bold ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
+                      <span className={`text-[14px] font-bold ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
                         {ann.count_label}
                       </span>
                     )}
                   </div>
-                  <div className="text-[9px] text-text-tertiary mt-0.5">
+                  <div className="text-[13px] text-text-tertiary mt-0.5">
                     {isLunar ? (
                       <span className="text-accent-gold font-semibold">음 {ann.month}.{ann.day}</span>
                     ) : (
@@ -318,9 +317,9 @@ function ThisMonthView({
                     )}
                   </div>
                 </div>
-                <div className="flex items-baseline gap-[1px] shrink-0">
-                  <span className={`text-[9px] ${isClose ? 'text-accent-gold-soft' : 'text-text-tertiary/50'}`}>D—</span>
-                  <span className={`text-[17px] font-bold tracking-[-0.5px] leading-none ${
+                <div className="flex items-baseline gap-[2px] shrink-0">
+                  <span className={`text-[13px] ${isClose ? 'text-accent-gold-soft' : 'text-text-tertiary/50'}`}>D—</span>
+                  <span className={`text-[24px] font-bold tracking-[-0.5px] leading-none ${
                     isClose ? 'text-accent-gold' : 'text-text-secondary/80'
                   }`}>
                     {ann.dday}
@@ -338,10 +337,10 @@ function ThisMonthView({
 
 function UpcomingView({ anniversaries }: { anniversaries: AnniversaryWithDDay[] }) {
   return (
-    <div className="px-5 pt-1">
+    <div className="px-5 pt-2">
       {anniversaries.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-text-tertiary text-[13px]">등록된 기념일이 없습니다</p>
+          <p className="text-text-tertiary text-[16px]">등록된 기념일이 없습니다</p>
         </div>
       ) : (
         anniversaries.map((ann) => {
@@ -351,20 +350,20 @@ function UpcomingView({ anniversaries }: { anniversaries: AnniversaryWithDDay[] 
           const isClose = ann.dday <= 14;
 
           return (
-            <div key={ann.id} className="flex gap-2 py-[9px] border-b-[0.5px] border-border-subtle last:border-b-0 items-center">
-              <div className={`w-[2.5px] rounded-sm shrink-0 ${
+            <div key={ann.id} className="flex gap-3 py-3 border-b-[0.5px] border-border-subtle last:border-b-0 items-center">
+              <div className={`w-[3px] rounded-sm shrink-0 ${
                 isLunar ? 'bg-accent-gold' : 'bg-accent-solar'
-              }`} style={{ height: '32px' }} />
+              }`} style={{ height: '36px' }} />
               <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[13px] font-semibold">{ann.name}</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[16px] font-semibold">{ann.name}</span>
                   {ann.count_label && (
-                    <span className={`text-[10px] font-bold ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
+                    <span className={`text-[14px] font-bold ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
                       {ann.count_label}
                     </span>
                   )}
                 </div>
-                <div className="text-[9px] text-text-tertiary mt-0.5">
+                <div className="text-[13px] text-text-tertiary mt-0.5">
                   {isLunar ? (
                     <>
                       <span className="text-accent-gold font-semibold">음 {ann.month}.{ann.day}</span>
@@ -378,9 +377,9 @@ function UpcomingView({ anniversaries }: { anniversaries: AnniversaryWithDDay[] 
                   )}
                 </div>
               </div>
-              <div className="flex items-baseline gap-[1px] shrink-0">
-                <span className={`text-[9px] ${isClose ? 'text-accent-gold-soft' : 'text-text-tertiary/50'}`}>D—</span>
-                <span className={`text-[17px] font-bold tracking-[-0.5px] leading-none ${
+              <div className="flex items-baseline gap-[2px] shrink-0">
+                <span className={`text-[13px] ${isClose ? 'text-accent-gold-soft' : 'text-text-tertiary/50'}`}>D—</span>
+                <span className={`text-[24px] font-bold tracking-[-0.5px] leading-none ${
                   isClose ? 'text-accent-gold' : 'text-text-secondary/80'
                 }`}>
                   {ann.dday}
@@ -400,10 +399,10 @@ function ByMonthView({ grouped }: { grouped: Map<string, AnniversaryWithDDay[]> 
   const currentMonthKey = `${today.getFullYear()}년 ${today.getMonth() + 1}월`;
 
   return (
-    <div className="px-5 pt-1">
+    <div className="px-5 pt-2">
       {grouped.size === 0 ? (
         <div className="text-center py-16">
-          <p className="text-text-tertiary text-[13px]">등록된 기념일이 없습니다</p>
+          <p className="text-text-tertiary text-[16px]">등록된 기념일이 없습니다</p>
         </div>
       ) : (
         Array.from(grouped.entries()).map(([monthLabel, events], groupIdx) => {
@@ -413,18 +412,18 @@ function ByMonthView({ grouped }: { grouped: Map<string, AnniversaryWithDDay[]> 
           return (
             <div key={monthLabel}>
               {/* Month header */}
-              <div className={`flex justify-between items-baseline ${groupIdx > 0 ? 'border-t-[0.5px] border-border-subtle/50 pt-3.5' : 'pt-2.5'} pb-1.5`}>
-                <div className="flex items-baseline gap-1.5">
-                  <span className={`text-[16px] font-extrabold tracking-[-0.5px] ${
+              <div className={`flex justify-between items-baseline ${groupIdx > 0 ? 'border-t-[0.5px] border-border-subtle/50 pt-4' : 'pt-3'} pb-2`}>
+                <div className="flex items-baseline gap-2">
+                  <span className={`text-[20px] font-extrabold tracking-[-0.5px] ${
                     isCurrentMonth ? 'text-accent-gold' : 'text-text-primary/85'
                   }`}>
                     {monthNum}월
                   </span>
                   {isCurrentMonth && (
-                    <span className="text-[9px] text-text-tertiary">이번 달</span>
+                    <span className="text-[13px] text-text-tertiary">이번 달</span>
                   )}
                 </div>
-                <span className="text-[9px] text-text-tertiary">{events.length}건</span>
+                <span className="text-[13px] text-text-tertiary">{events.length}건</span>
               </div>
 
               {/* Events in this month */}
@@ -436,24 +435,24 @@ function ByMonthView({ grouped }: { grouped: Map<string, AnniversaryWithDDay[]> 
                   const isClose = ann.dday <= 14;
 
                   return (
-                    <div key={ann.id} className={`flex gap-2 py-[7px] items-center ${
+                    <div key={ann.id} className={`flex gap-3 py-2.5 items-center ${
                       i < events.length - 1 ? 'border-b-[0.5px] border-border-subtle/30' : ''
                     }`}>
-                      <div className="text-[10px] text-text-tertiary w-5 shrink-0 text-center">
+                      <div className="text-[14px] text-text-tertiary w-6 shrink-0 text-center font-medium">
                         {nd.getDate()}
                       </div>
-                      <div className={`w-[2.5px] rounded-sm shrink-0 ${
+                      <div className={`w-[3px] rounded-sm shrink-0 ${
                         isLunar ? 'bg-accent-gold' : 'bg-accent-solar'
-                      }`} style={{ height: '22px' }} />
+                      }`} style={{ height: '26px' }} />
                       <div className="flex-1 min-w-0">
-                        <span className="text-[12px] font-semibold">{ann.name}</span>
+                        <span className="text-[15px] font-semibold">{ann.name}</span>
                         {ann.count_label && (
-                          <span className={`text-[9px] font-bold ml-1.5 ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
+                          <span className={`text-[13px] font-bold ml-2 ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
                             {ann.count_label}
                           </span>
                         )}
                       </div>
-                      <span className={`text-[13px] font-bold shrink-0 ${
+                      <span className={`text-[16px] font-bold shrink-0 ${
                         isClose ? 'text-accent-gold' : 'text-text-secondary/80'
                       }`}>
                         D-{ann.dday}

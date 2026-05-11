@@ -30,18 +30,18 @@ export default function AnniversaryCard({ anniversary }: Props) {
   return (
     <div
       onClick={() => !isDemo && router.push(`/edit/${anniversary.id}`)}
-      className={`flex gap-2.5 py-3 border-b border-border-subtle items-start
+      className={`flex gap-3 py-4 border-b border-border-subtle items-start
         transition-opacity duration-150 active:opacity-70
         ${!isDemo ? 'cursor-pointer' : ''}`}
     >
       {/* Left color bar */}
-      <div className={`w-[2.5px] self-stretch rounded-sm shrink-0 ${isLunar ? 'bg-accent-gold' : 'bg-accent-solar'}`} />
+      <div className={`w-[3px] self-stretch rounded-sm shrink-0 ${isLunar ? 'bg-accent-gold' : 'bg-accent-solar'}`} />
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         {/* Tags */}
-        <div className="flex items-center gap-1.5 mb-1">
-          <span className={`text-[9px] font-semibold tracking-[1.5px] px-1.5 py-[1px] rounded-sm border-[0.5px] ${
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className={`text-[13px] font-semibold tracking-[0.5px] px-2 py-[2px] rounded-sm border-[0.5px] ${
             isLunar
               ? 'text-accent-gold border-accent-gold-dim'
               : 'text-accent-solar border-accent-solar-dim'
@@ -49,22 +49,22 @@ export default function AnniversaryCard({ anniversary }: Props) {
             {label}
           </span>
           {anniversary.is_shared && (
-            <span className="text-[9px] text-text-secondary font-medium">가족</span>
+            <span className="text-[13px] text-text-secondary font-medium">가족</span>
           )}
         </div>
 
         {/* Name + count */}
-        <div className="flex items-baseline gap-2 mb-0.5">
-          <span className="text-[15px] font-semibold tracking-[-0.3px]">{anniversary.name}</span>
+        <div className="flex items-baseline gap-2 mb-1">
+          <span className="text-[18px] font-semibold tracking-[-0.3px]">{anniversary.name}</span>
           {anniversary.count_label && (
-            <span className={`text-[12px] font-bold ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
+            <span className={`text-[15px] font-bold ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
               {anniversary.count_label}
             </span>
           )}
         </div>
 
         {/* Date */}
-        <p className="text-[11px] text-text-secondary">
+        <p className="text-[15px] text-text-secondary">
           {isLunar ? (
             <>
               <span className="font-semibold text-accent-gold">음 {anniversary.month}.{anniversary.day}</span>
@@ -83,8 +83,8 @@ export default function AnniversaryCard({ anniversary }: Props) {
 
       {/* D-day */}
       <div className={`flex items-baseline gap-[2px] pt-5 shrink-0 ${isActive ? '' : 'opacity-50'}`}>
-        <span className={`text-[11px] font-medium ${isActive ? 'text-accent-gold-soft' : 'text-text-tertiary'}`}>D—</span>
-        <span className={`text-[22px] font-bold tracking-[-1px] leading-none ${isActive ? 'text-accent-gold' : 'text-text-secondary'}`}>
+        <span className={`text-[14px] font-medium ${isActive ? 'text-accent-gold-soft' : 'text-text-tertiary'}`}>D—</span>
+        <span className={`text-[28px] font-bold tracking-[-1px] leading-none ${isActive ? 'text-accent-gold' : 'text-text-secondary'}`}>
           {ddayNum === 0 ? 'Day' : ddayNum}
         </span>
       </div>

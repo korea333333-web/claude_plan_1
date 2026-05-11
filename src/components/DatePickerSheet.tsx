@@ -33,15 +33,15 @@ export default function DatePickerSheet({ month, day, onConfirm }: DatePickerShe
       <button
         type="button"
         onClick={handleOpen}
-        className="w-full px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl text-[15px] text-text-primary text-left flex items-center justify-between transition-colors"
+        className="w-full px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl text-[16px] text-text-primary text-left flex items-center justify-between transition-colors"
       >
         <span>
-          <span className="text-accent-gold font-bold text-[18px]">{month}</span>
-          <span className="text-text-secondary text-[14px]">월 </span>
-          <span className="text-accent-gold font-bold text-[18px]">{day}</span>
-          <span className="text-text-secondary text-[14px]">일</span>
+          <span className="text-accent-gold font-bold text-[22px]">{month}</span>
+          <span className="text-text-secondary text-[16px]">월 </span>
+          <span className="text-accent-gold font-bold text-[22px]">{day}</span>
+          <span className="text-text-secondary text-[16px]">일</span>
         </span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
@@ -56,14 +56,14 @@ export default function DatePickerSheet({ month, day, onConfirm }: DatePickerShe
             <div className="flex items-center justify-between px-5 pt-4 pb-2">
               <button
                 onClick={() => setOpen(false)}
-                className="text-text-secondary text-[14px]"
+                className="text-text-secondary text-[16px]"
               >
                 취소
               </button>
-              <span className="text-[14px] font-bold text-text-primary">날짜 선택</span>
+              <span className="text-[16px] font-bold text-text-primary">날짜 선택</span>
               <button
                 onClick={handleConfirm}
-                className="text-accent-gold text-[14px] font-bold"
+                className="text-accent-gold text-[16px] font-bold"
               >
                 확인
               </button>

@@ -129,16 +129,16 @@ export default function HomePage() {
 
       {/* Top bar */}
       <div className="relative z-10 flex justify-between items-center px-6 pt-[env(safe-area-inset-top,16px)]">
-        <span className="text-[11px] text-accent-gold-soft tracking-[3px] font-semibold pt-4">달새김</span>
+        <span className="text-[13px] text-accent-gold-soft tracking-[3px] font-semibold pt-4">달새김</span>
         <div className="flex gap-2.5 pt-4">
-          <button className="w-8 h-8 rounded-full bg-bg-card-strong border border-border-card flex items-center justify-center relative">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+          <button className="w-9 h-9 rounded-full bg-bg-card-strong border border-border-card flex items-center justify-center relative">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
               <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 01-3.46 0" />
             </svg>
-            <span className="absolute top-1 right-1.5 w-1.5 h-1.5 bg-accent-gold rounded-full" />
+            <span className="absolute top-1 right-1.5 w-2 h-2 bg-accent-gold rounded-full" />
           </button>
-          <Link href="/settings" className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold overflow-hidden"
+          <Link href="/settings" className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold overflow-hidden"
             style={{ background: 'linear-gradient(135deg, #c9a96e, #8b6f47)', color: '#0a0d14' }}>
             {authUser?.avatarUrl ? (
               <img src={authUser.avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -151,23 +151,23 @@ export default function HomePage() {
       <div className="relative z-10 px-6 pt-[30px]">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-[64px] font-black tracking-[-3px] leading-[0.95]">달새김</h1>
-            <p className="text-[12px] text-text-secondary mt-3">소중한 날을 달에 새기다</p>
-            <p className="text-[10px] text-accent-gold-soft tracking-[4px] font-medium mt-1.5">DALSAEGIM</p>
+            <h1 className="text-[56px] font-black tracking-[-3px] leading-[0.95]">달새김</h1>
+            <p className="text-[15px] text-text-secondary mt-3">소중한 날을 달에 새기다</p>
+            <p className="text-[12px] text-accent-gold-soft tracking-[4px] font-medium mt-1.5">DALSAEGIM</p>
           </div>
           <div className="text-center mt-1 shrink-0 ml-3">
             <MoonPhase lunarDay={lunarDayNum} size={64} />
-            <p className="text-[11px] text-accent-gold font-bold mt-1">{phaseName}</p>
-            <p className="text-[9px] text-text-secondary mt-0.5">D-{countdown.days}</p>
+            <p className="text-[14px] text-accent-gold font-bold mt-1">{phaseName}</p>
+            <p className="text-[12px] text-text-secondary mt-0.5">D-{countdown.days}</p>
           </div>
         </div>
       </div>
 
       {/* Today */}
       <div className="relative z-10 px-6 pt-9">
-        <p className="text-[11px] text-text-secondary tracking-[1.5px]">{todayStr}</p>
+        <p className="text-[14px] text-text-secondary tracking-[1px]">{todayStr}</p>
         <div className="flex items-baseline gap-2 mt-1.5">
-          <span className="text-[15px] text-accent-gold-soft font-medium">음</span>
+          <span className="text-[18px] text-accent-gold-soft font-medium">음</span>
           <span className="text-[42px] text-accent-gold font-bold tracking-[-1.8px] leading-none">
             {lunarToday.month}.{lunarToday.day}
           </span>
@@ -177,13 +177,13 @@ export default function HomePage() {
       {/* Events */}
       <div className="relative z-10 px-6 pt-6">
         <div className="flex justify-between items-baseline pb-2.5 border-b border-border-strong">
-          <h2 className="text-[11px] font-bold tracking-[2px]">기념일</h2>
-          <div className="flex gap-2 items-center">
-            <span className="flex items-center gap-1 text-[9px] text-text-secondary">
-              <span className="w-[5px] h-[5px] bg-accent-gold rounded-none" />음력
+          <h2 className="text-[14px] font-bold tracking-[1.5px]">기념일</h2>
+          <div className="flex gap-2.5 items-center">
+            <span className="flex items-center gap-1.5 text-[13px] text-text-secondary">
+              <span className="w-[6px] h-[6px] bg-accent-gold rounded-none" />음력
             </span>
-            <span className="flex items-center gap-1 text-[9px] text-text-secondary">
-              <span className="w-[5px] h-[5px] bg-accent-solar rounded-none" />양력
+            <span className="flex items-center gap-1.5 text-[13px] text-text-secondary">
+              <span className="w-[6px] h-[6px] bg-accent-solar rounded-none" />양력
             </span>
           </div>
         </div>
@@ -194,8 +194,8 @@ export default function HomePage() {
           </div>
         ) : anniversaries.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-text-secondary text-[15px] mb-2">아직 등록된 기념일이 없어요</p>
-            <p className="text-text-tertiary text-[13px]">+ 버튼을 눌러 소중한 날을 새겨보세요</p>
+            <p className="text-text-secondary text-[17px] mb-2">아직 등록된 기념일이 없어요</p>
+            <p className="text-text-tertiary text-[15px]">+ 버튼을 눌러 소중한 날을 새겨보세요</p>
           </div>
         ) : (
           <div className="pt-2">

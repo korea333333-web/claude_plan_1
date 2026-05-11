@@ -80,16 +80,16 @@ export default function AddPage() {
       <div className="flex items-center gap-3 px-6 pt-[env(safe-area-inset-top,16px)] pb-6">
         <button
           onClick={() => router.back()}
-          className="w-8 h-8 rounded-full bg-bg-card-strong border border-border-card flex items-center justify-center"
+          className="w-9 h-9 rounded-full bg-bg-card-strong border border-border-card flex items-center justify-center"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
         <h1 className="text-[34px] font-extrabold tracking-[-1.5px] leading-none pt-4">추가</h1>
       </div>
 
-      <div className="px-6 space-y-6">
+      <div className="px-6 space-y-7">
         {/* Name */}
         <FormField label="기념일 이름">
           <input
@@ -97,7 +97,7 @@ export default function AddPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="예: 어머니 생신"
-            className="w-full px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl text-[15px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent-gold transition-colors"
+            className="w-full px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl text-[17px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent-gold transition-colors"
           />
         </FormField>
 
@@ -108,7 +108,7 @@ export default function AddPage() {
               <button
                 key={type}
                 onClick={() => setDateType(type)}
-                className={`flex-1 py-2.5 rounded-full text-[12px] font-medium text-center transition-all ${
+                className={`flex-1 py-3 rounded-full text-[15px] font-medium text-center transition-all ${
                   dateType === type
                     ? 'bg-accent-gold text-bg-deep font-bold'
                     : 'text-text-secondary'
@@ -127,12 +127,12 @@ export default function AddPage() {
 
         {/* Category */}
         <FormField label="카테고리">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {categories.map((cat) => (
               <button
                 key={cat.value}
                 onClick={() => setCategory(cat.value)}
-                className={`px-4 py-2 rounded-full text-[12px] font-medium border-[0.5px] transition-all ${
+                className={`px-4 py-2.5 rounded-full text-[15px] font-medium border-[0.5px] transition-all ${
                   category === cat.value
                     ? 'bg-accent-gold-dim border-accent-gold text-accent-gold font-semibold'
                     : 'bg-bg-card border-border-strong text-text-secondary'
@@ -151,7 +151,7 @@ export default function AddPage() {
               <button
                 key={rt.value}
                 onClick={() => setRepeatType(rt.value)}
-                className={`flex-1 py-2.5 rounded-full text-[12px] font-medium text-center transition-all ${
+                className={`flex-1 py-3 rounded-full text-[15px] font-medium text-center transition-all ${
                   repeatType === rt.value
                     ? 'bg-accent-gold text-bg-deep font-bold'
                     : 'text-text-secondary'
@@ -170,16 +170,16 @@ export default function AddPage() {
             value={startYear}
             onChange={(e) => setStartYear(e.target.value)}
             placeholder="예: 1957 (선택사항)"
-            className="w-full px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl text-[15px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent-gold transition-colors"
+            className="w-full px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl text-[17px] text-text-primary placeholder:text-text-tertiary outline-none focus:border-accent-gold transition-colors"
           />
         </FormField>
 
         {/* Alarms */}
         <FormField label="알림">
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {alarms.map((alarm, i) => (
-              <div key={i} className="flex items-center gap-2.5 px-3.5 py-3 bg-bg-card-strong border border-border-strong rounded-xl">
-                <span className="text-[10px] text-accent-gold-soft font-bold w-5 shrink-0">{i + 1}차</span>
+              <div key={i} className="flex items-center gap-3 px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl">
+                <span className="text-[13px] text-accent-gold-soft font-bold w-6 shrink-0">{i + 1}차</span>
                 <select
                   value={alarm.daysBefore}
                   onChange={(e) => {
@@ -188,7 +188,7 @@ export default function AddPage() {
                     setAlarms(next);
                   }}
                   disabled={!alarm.enabled}
-                  className="flex-1 bg-bg-card border border-border-strong rounded-lg px-2.5 py-2 text-[12px] text-text-primary outline-none disabled:opacity-40"
+                  className="flex-1 bg-bg-card border border-border-strong rounded-lg px-3 py-2.5 text-[15px] text-text-primary outline-none disabled:opacity-40"
                 >
                   {dayOptions.map((d) => (
                     <option key={d} value={d}>{d === 0 ? '당일' : `${d}일 전`}</option>
@@ -204,7 +204,7 @@ export default function AddPage() {
                     setAlarms(next);
                   }}
                   disabled={!alarm.enabled}
-                  className="w-[88px] bg-bg-card border border-border-strong rounded-lg px-2.5 py-2 text-[12px] text-text-primary outline-none disabled:opacity-40"
+                  className="w-[96px] bg-bg-card border border-border-strong rounded-lg px-3 py-2.5 text-[15px] text-text-primary outline-none disabled:opacity-40"
                 />
                 <button
                   onClick={() => {
@@ -212,18 +212,18 @@ export default function AddPage() {
                     next[i] = { ...next[i], enabled: !next[i].enabled };
                     setAlarms(next);
                   }}
-                  className={`w-10 h-[24px] rounded-full relative transition-colors shrink-0 ${
+                  className={`w-11 h-[26px] rounded-full relative transition-colors shrink-0 ${
                     alarm.enabled ? 'bg-accent-gold' : 'bg-text-tertiary'
                   }`}
                 >
-                  <div className={`w-[18px] h-[18px] rounded-full bg-white absolute top-[3px] transition-transform ${
-                    alarm.enabled ? 'translate-x-[19px]' : 'translate-x-[3px]'
+                  <div className={`w-[20px] h-[20px] rounded-full bg-white absolute top-[3px] transition-transform ${
+                    alarm.enabled ? 'translate-x-[21px]' : 'translate-x-[3px]'
                   }`} />
                 </button>
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-text-tertiary mt-2 text-center">기본 오전 9시 · 날짜와 시간 변경 가능</p>
+          <p className="text-[13px] text-text-tertiary mt-2.5 text-center">기본 오전 9시 · 날짜와 시간 변경 가능</p>
         </FormField>
 
         {/* Share */}
@@ -231,7 +231,7 @@ export default function AddPage() {
           <div className="flex bg-bg-card border border-border-strong rounded-full p-1">
             <button
               onClick={() => setIsShared(false)}
-              className={`flex-1 py-2.5 rounded-full text-[12px] font-medium text-center transition-all ${
+              className={`flex-1 py-3 rounded-full text-[15px] font-medium text-center transition-all ${
                 !isShared ? 'bg-accent-gold text-bg-deep font-bold' : 'text-text-secondary'
               }`}
             >
@@ -239,7 +239,7 @@ export default function AddPage() {
             </button>
             <button
               onClick={() => setIsShared(true)}
-              className={`flex-1 py-2.5 rounded-full text-[12px] font-medium text-center transition-all ${
+              className={`flex-1 py-3 rounded-full text-[15px] font-medium text-center transition-all ${
                 isShared ? 'bg-accent-gold text-bg-deep font-bold' : 'text-text-secondary'
               }`}
             >
@@ -252,7 +252,7 @@ export default function AddPage() {
         <button
           onClick={handleSave}
           disabled={!name || saving}
-          className="w-full py-4 rounded-full bg-accent-gold text-bg-deep text-base font-bold disabled:opacity-40 transition-opacity mt-4 mb-8"
+          className="w-full py-4 rounded-full bg-accent-gold text-bg-deep text-[17px] font-bold disabled:opacity-40 transition-opacity mt-4 mb-8"
         >
           {saving ? '저장 중...' : '저장하기'}
         </button>
@@ -266,7 +266,7 @@ export default function AddPage() {
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-[10px] font-bold tracking-[2px] uppercase text-accent-gold mb-3">{label}</label>
+      <label className="block text-[13px] font-bold tracking-[1.5px] uppercase text-accent-gold mb-3">{label}</label>
       {children}
     </div>
   );

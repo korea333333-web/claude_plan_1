@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { lunarToSolar, solarToLunar } from '@/lib/lunar';
 import type { SolarDate, LunarDate } from '@/lib/lunar';
 import BottomNav from '@/components/BottomNav';
 
 export default function ConverterPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<'lunarToSolar' | 'solarToLunar'>('lunarToSolar');
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [month, setMonth] = useState('');
@@ -205,6 +207,27 @@ export default function ConverterPage() {
       {error && (
         <div className="mx-6 mt-4 p-4 bg-accent-red/10 border border-accent-red/20 rounded-2xl text-center text-[15px] text-accent-red">
           {error}
+        </div>
+      )}
+
+      {/* 기념일로 추가 버튼 — 변환 결과가 있을 때만 표시 */}
+      {result && outputDate && (
+        <div className="px-6 mt-4">
+          <button
+            onClick={() => {
+              const m = mode === 'lunarToSolar' ? parseInt(month) : result.lunar!.month;
+              const d = mode === 'lunarToSolar' ? parseInt(day) : result.lunar!.day;
+              const dt = 'lunar';
+              router.push(`/add?dateType=${dt}&month=${m}&day=${d}`);
+            }}
+            className="w-full py-3.5 rounded-full bg-accent-gold-dim border border-accent-gold/30 text-accent-gold text-[15px] font-semibold flex items-center justify-center gap-2 transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            기념일로 추가
+          </button>
         </div>
       )}
 

@@ -20,6 +20,10 @@ export default function SettingsPage() {
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [telegramDeepLink, setTelegramDeepLink] = useState<string | null>(null);
   const [telegramError, setTelegramError] = useState<string | null>(null);
+  const [gcalConnected, setGcalConnected] = useState(false);
+  const [gcalLoading, setGcalLoading] = useState(false);
+  const [gcalError, setGcalError] = useState<string | null>(null);
+  const [gcalEmail, setGcalEmail] = useState<string | null>(null);
   const [builtInHolidays, setBuiltInHolidays] = useState({
     seollal: true,
     chuseok: true,
@@ -34,6 +38,18 @@ export default function SettingsPage() {
   useEffect(() => {
     loadUser();
     checkTelegramStatus();
+    checkGcalStatus();
+
+    // Handle OAuth callback result
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('gcal') === 'success') {
+      setGcalConnected(true);
+      checkGcalStatus();
+      window.history.replaceState({}, '', '/settings');
+    } else if (params.get('gcal') === 'error') {
+      setGcalError('구글 캘린더 연결에 실패했습니다');
+      window.history.replaceState({}, '', '/settings');
+    }
   }, []);
 
   async function loadUser() {
@@ -71,6 +87,37 @@ export default function SettingsPage() {
       const data = await res.json();
       setTelegramConnected(data.connected);
     } catch { /* skip */ }
+  }
+
+  async function checkGcalStatus() {
+    try {
+      const res = await fetch('/api/gcal/status');
+      const data = await res.json();
+      setGcalConnected(data.connected);
+      if (data.email) setGcalEmail(data.email);
+    } catch { /* skip */ }
+  }
+
+  async function handleGcalConnect() {
+    if (gcalLoading) return;
+    setGcalLoading(true);
+    setGcalError(null);
+    try {
+      const res = await fetch('/api/gcal/connect', { method: 'POST' });
+      const data = await res.json();
+      if (data.error) {
+        setGcalError(data.error);
+        setGcalLoading(false);
+        return;
+      }
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+        return;
+      }
+    } catch {
+      setGcalError('연결 요청 실패');
+    }
+    setGcalLoading(false);
   }
 
   async function handleTelegramConnect() {
@@ -136,12 +183,11 @@ export default function SettingsPage() {
     },
     {
       name: '구글 캘린더',
-      desc: '일정으로 자동 등록',
-      connected: false,
+      desc: gcalEmail ? gcalEmail : '일정으로 자동 등록',
+      connected: gcalConnected,
       iconType: 'gcal' as const,
-      onConnect: undefined,
-      loading: false,
-      comingSoon: true,
+      onConnect: handleGcalConnect,
+      loading: gcalLoading,
     },
   ];
 
@@ -240,9 +286,9 @@ export default function SettingsPage() {
               )}
             </div>
           ))}
-          {telegramError && (
+          {(telegramError || gcalError) && (
             <div className="mt-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30">
-              <p className="text-[13px] text-red-400">{telegramError}</p>
+              <p className="text-[13px] text-red-400">{telegramError || gcalError}</p>
             </div>
           )}
           {telegramDeepLink && !telegramConnected && (

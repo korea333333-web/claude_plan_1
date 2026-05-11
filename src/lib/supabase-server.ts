@@ -38,27 +38,22 @@ export async function createServerSupabaseClient() {
 
 export async function getAuthenticatedUserId(): Promise<string | null> {
   const supabase = await createServerSupabaseClient();
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  console.log(`[AU1] supabase=${user?.id?.slice(0, 8) || 'none'} err=${authErr?.message || 'none'}`);
+  const { data: { user } } = await supabase.auth.getUser();
   if (user) return user.id;
 
   const cookieStore = await cookies();
   const kakaoSessionCookie = cookieStore.get(COOKIE_NAME);
   if (!kakaoSessionCookie?.value) {
-    console.log('[AU2] no kakao cookie');
     return null;
   }
 
   const session = verifySession(kakaoSessionCookie.value);
   if (!session) {
-    console.log('[AU2] kakao cookie invalid');
     return null;
   }
-  console.log(`[AU2] kakao=${session.kakaoId}`);
 
   const secret = process.env.KAKAO_SESSION_SECRET;
   if (!secret) {
-    console.log('[AU3] no KAKAO_SESSION_SECRET');
     return null;
   }
 
@@ -70,14 +65,11 @@ export async function getAuthenticatedUserId(): Promise<string | null> {
     .digest('hex');
 
   const { data: listData, error: listErr } = await service.auth.admin.listUsers();
-  console.log(`[AU3] listUsers: count=${listData?.users?.length ?? 'null'} err=${listErr?.message || 'none'}`);
+  if (listErr) return null;
   const existing = listData?.users?.find(u => u.email === email);
   if (existing) {
-    console.log(`[AU4] found existing: ${existing.id.slice(0, 8)}`);
     return existing.id;
   }
-
-  console.log(`[AU4] creating user: ${email}`);
   const { data: created, error: createErr } = await service.auth.admin.createUser({
     email,
     password,
@@ -91,10 +83,8 @@ export async function getAuthenticatedUserId(): Promise<string | null> {
   });
 
   if (createErr || !created?.user) {
-    console.error(`[AU5] createUser fail: ${createErr?.message || 'no user'}`);
     return null;
   }
 
-  console.log(`[AU5] created: ${created.user.id.slice(0, 8)}`);
   return created.user.id;
 }

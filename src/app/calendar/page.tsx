@@ -234,7 +234,7 @@ function ThisMonthView({
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-        <span className="text-[16px] text-text-secondary font-medium">{year}년 {month + 1}월</span>
+        <span className="text-[18px] text-text-secondary font-bold">{year}년 {month + 1}월</span>
         <button onClick={nextMonth} className="p-2">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
             <polyline points="9 18 15 12 9 6" />
@@ -243,10 +243,10 @@ function ThisMonthView({
       </div>
 
       {/* Calendar grid with lunar dates */}
-      <div className="px-3 pt-1 pb-2">
+      <div className="px-2 pt-1 pb-2">
         <div className="grid grid-cols-7 mb-1">
           {weekdays.map((wd, i) => (
-            <div key={wd} className={`text-center text-[13px] py-1.5 font-medium ${i === 0 ? 'text-accent-red/70' : 'text-text-tertiary'}`}>
+            <div key={wd} className={`text-center text-[15px] py-2 font-semibold ${i === 0 ? 'text-accent-red/70' : 'text-text-tertiary'}`}>
               {wd}
             </div>
           ))}
@@ -275,12 +275,12 @@ function ThisMonthView({
               <div
                 key={i}
                 onClick={() => { if (cell.inMonth) onSelectDay(isSelected ? null : cell.day); }}
-                className={`text-center py-2 relative flex flex-col items-center gap-0.5 cursor-pointer transition-colors ${
-                  isSelected ? 'bg-accent-gold/20 rounded-lg' :
-                  todayHighlight ? 'bg-accent-gold-dim rounded-lg' : ''
+                className={`text-center py-2.5 relative flex flex-col items-center gap-1 cursor-pointer transition-colors ${
+                  isSelected ? 'bg-accent-gold/20 rounded-xl' :
+                  todayHighlight ? 'bg-accent-gold-dim rounded-xl' : ''
                 }`}
               >
-                <span className={`text-[15px] font-medium leading-none ${
+                <span className={`text-[18px] font-semibold leading-none ${
                   !cell.inMonth ? 'text-text-tertiary/20' :
                   isSelected ? 'text-accent-gold font-bold' :
                   todayHighlight ? 'text-accent-gold font-bold' :
@@ -290,7 +290,7 @@ function ThisMonthView({
                 }`}>
                   {cell.day}
                 </span>
-                <span className={`text-[10px] leading-none ${
+                <span className={`text-[12px] leading-none ${
                   !cell.inMonth ? 'text-text-tertiary/15' :
                   lunarStr.includes('월') ? 'text-accent-gold/70 font-semibold' :
                   'text-text-tertiary/60'
@@ -298,7 +298,7 @@ function ThisMonthView({
                   {cell.inMonth ? lunarStr : ''}
                 </span>
                 {event && cell.inMonth && (
-                  <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full ${
+                  <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full ${
                     event.date_type === 'lunar' ? 'bg-accent-gold' : 'bg-accent-solar'
                   }`} />
                 )}

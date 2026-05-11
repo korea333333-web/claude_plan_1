@@ -6,12 +6,12 @@ import { createClient } from '@/lib/supabase';
 import type { Category, RepeatType } from '@/lib/anniversary';
 import BottomNav from '@/components/BottomNav';
 
-const categories: { value: Category; label: string; emoji: string }[] = [
-  { value: 'birthday', label: '생일', emoji: '🎂' },
-  { value: 'memorial', label: '제사', emoji: '🕯️' },
-  { value: 'anniversary', label: '기념일', emoji: '💍' },
-  { value: 'holiday', label: '명절', emoji: '🎑' },
-  { value: 'other', label: '기타', emoji: '📌' },
+const categories: { value: Category; label: string }[] = [
+  { value: 'birthday', label: '생일' },
+  { value: 'memorial', label: '제사' },
+  { value: 'anniversary', label: '기념일' },
+  { value: 'holiday', label: '명절' },
+  { value: 'other', label: '기타' },
 ];
 
 const repeatTypes: { value: RepeatType; label: string }[] = [
@@ -158,7 +158,7 @@ export default function EditPage() {
                     : 'text-text-tertiary'
                 }`}
               >
-                {type === 'lunar' ? '🌙 음력' : '☀️ 양력'}
+                {type === 'lunar' ? '음력' : '양력'}
               </button>
             ))}
           </div>
@@ -203,7 +203,7 @@ export default function EditPage() {
                     : 'bg-bg-input border-border-card text-text-secondary'
                 }`}
               >
-                {cat.emoji} {cat.label}
+                {cat.label}
               </button>
             ))}
           </div>

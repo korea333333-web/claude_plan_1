@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getAuthenticatedUserId, createServiceClient } from '@/lib/supabase-server';
 
 export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const userId = await getAuthenticatedUserId();
 
-  if (!user) {
+  if (!userId) {
     return NextResponse.json({ connected: false });
   }
 
-  const { data } = await supabase
+  const service = createServiceClient();
+  const { data } = await service
     .from('notification_settings')
     .select('telegram_chat_id, telegram_connected_at')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single();
 
   return NextResponse.json({

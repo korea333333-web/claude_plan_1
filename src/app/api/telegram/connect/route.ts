@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { createServiceClient } from '@/lib/supabase-server';
+import { getAuthenticatedUserId, createServiceClient } from '@/lib/supabase-server';
 import crypto from 'crypto';
 
 async function ensureWebhook(req: NextRequest) {
@@ -18,13 +17,13 @@ async function ensureWebhook(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const userId = await getAuthenticatedUserId();
 
-  if (!user) {
+  if (!userId) {
     return NextResponse.json({ error: '로그인이 필요합니다' }, { status: 401 });
   }
 
+  console.log('[telegram-connect] userId:', userId);
   await ensureWebhook(req);
 
   const service = createServiceClient();
@@ -33,7 +32,7 @@ export async function POST(req: NextRequest) {
   const { data: existing } = await service
     .from('notification_settings')
     .select('id, telegram_connect_token, telegram_chat_id')
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single();
 
   if (existing?.telegram_chat_id) {
@@ -51,23 +50,24 @@ export async function POST(req: NextRequest) {
     const { error } = await service
       .from('notification_settings')
       .update({ telegram_connect_token: token })
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     if (error) {
-      console.error('[telegram-connect] update error:', error);
+      console.error('[telegram-connect] update error:', JSON.stringify(error));
       return NextResponse.json({ error: '토큰 저장 실패' }, { status: 500 });
     }
   } else {
     const { error } = await service
       .from('notification_settings')
-      .insert({ user_id: user.id, telegram_connect_token: token });
+      .insert({ user_id: userId, telegram_connect_token: token });
 
     if (error) {
-      console.error('[telegram-connect] insert error:', error);
+      console.error('[telegram-connect] insert error:', JSON.stringify(error));
       return NextResponse.json({ error: '토큰 저장 실패' }, { status: 500 });
     }
   }
 
   const deepLink = `https://t.me/${botUsername}?start=${token}`;
+  console.log('[telegram-connect] token created, deepLink ready');
   return NextResponse.json({ deepLink, token });
 }

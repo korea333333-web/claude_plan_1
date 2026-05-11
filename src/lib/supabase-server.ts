@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import crypto from 'crypto';
+import { verifySession, COOKIE_NAME } from './kakao-session';
 
 export function createServiceClient() {
   return createClient(
@@ -32,4 +34,54 @@ export async function createServerSupabaseClient() {
       },
     }
   );
+}
+
+export async function getAuthenticatedUserId(): Promise<string | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) return user.id;
+
+  const cookieStore = await cookies();
+  const kakaoSessionCookie = cookieStore.get(COOKIE_NAME);
+  if (!kakaoSessionCookie?.value) return null;
+
+  const session = verifySession(kakaoSessionCookie.value);
+  if (!session) return null;
+
+  const secret = process.env.KAKAO_SESSION_SECRET;
+  if (!secret) {
+    console.error('[auth] KAKAO_SESSION_SECRET not set');
+    return null;
+  }
+
+  const service = createServiceClient();
+  const email = `kakao_${session.kakaoId}@dalsaegim.app`;
+  const password = crypto
+    .createHmac('sha256', secret)
+    .update(`kakao_${session.kakaoId}`)
+    .digest('hex');
+
+  const { data: { users } } = await service.auth.admin.listUsers();
+  const existing = users?.find(u => u.email === email);
+  if (existing) return existing.id;
+
+  const { data: created, error } = await service.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      full_name: session.nickname,
+      avatar_url: session.profileImage,
+      provider: 'kakao',
+      kakao_id: session.kakaoId,
+    },
+  });
+
+  if (error || !created?.user) {
+    console.error('[auth] Kakao Supabase user creation failed:', JSON.stringify(error));
+    return null;
+  }
+
+  console.log('[auth] Created Supabase user for Kakao:', created.user.id);
+  return created.user.id;
 }

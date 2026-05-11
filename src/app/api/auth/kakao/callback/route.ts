@@ -121,7 +121,8 @@ export async function GET(request: Request) {
       });
 
       if (signInError) {
-        await supabaseAdmin.auth.admin.createUser({
+        console.log('[kakao-auth] signIn failed, creating user:', signInError.message);
+        const { error: createError } = await supabaseAdmin.auth.admin.createUser({
           email,
           password,
           email_confirm: true,
@@ -133,10 +134,17 @@ export async function GET(request: Request) {
           },
         });
 
-        await supabaseServer.auth.signInWithPassword({
-          email,
-          password,
-        });
+        if (createError) {
+          console.error('[kakao-auth] createUser failed:', JSON.stringify(createError));
+        } else {
+          const { error: signInError2 } = await supabaseServer.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (signInError2) {
+            console.error('[kakao-auth] signIn after create failed:', signInError2.message);
+          }
+        }
       }
     } catch (err) {
       console.error('[kakao-auth] Supabase user creation failed:', err);

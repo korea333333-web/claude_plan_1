@@ -131,13 +131,6 @@ export default function HomePage() {
       <div className="relative z-10 flex justify-between items-center px-6 pt-[env(safe-area-inset-top,16px)]">
         <span className="text-[13px] text-accent-gold-soft tracking-[3px] font-semibold pt-4">달새김</span>
         <div className="flex gap-2.5 pt-4">
-          <button className="w-9 h-9 rounded-full bg-bg-card-strong border border-border-card flex items-center justify-center relative">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 01-3.46 0" />
-            </svg>
-            <span className="absolute top-1 right-1.5 w-2 h-2 bg-accent-gold rounded-full" />
-          </button>
           <Link href={authUser ? '/settings' : '/login'} className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold overflow-hidden"
             style={authUser ? { background: 'linear-gradient(135deg, #c9a96e, #8b6f47)', color: '#0a0d14' } : undefined}>
             {authUser?.avatarUrl ? (

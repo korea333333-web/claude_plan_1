@@ -54,10 +54,21 @@ export default function WheelPicker({ items, value, onChange, suffix = '' }: Whe
     }, 150);
   }, [items, onChange]);
 
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const el = scrollRef.current;
+    if (!el) return;
+    const currentIdx = Math.round(el.scrollTop / ITEM_H);
+    const dir = e.deltaY > 0 ? 1 : -1;
+    const nextIdx = Math.max(0, Math.min(currentIdx + dir, items.length - 1));
+    el.scrollTo({ top: nextIdx * ITEM_H, behavior: 'smooth' });
+  }, [items.length]);
+
   return (
     <div
       className="relative overflow-hidden rounded-xl bg-bg-card-strong border border-border-strong flex-1"
       style={{ height: ITEM_H * VISIBLE }}
+      onWheel={handleWheel}
     >
       <div
         className="absolute inset-x-3 z-10 border-y border-accent-gold/20 pointer-events-none"

@@ -25,6 +25,9 @@ export default function SettingsPage() {
   const [gcalError, setGcalError] = useState<string | null>(null);
   const [gcalEmail, setGcalEmail] = useState<string | null>(null);
   const [gcalGuide, setGcalGuide] = useState(false);
+  const [kakaoConnected, setKakaoConnected] = useState(false);
+  const [kakaoLoading, setKakaoLoading] = useState(false);
+  const [kakaoError, setKakaoError] = useState<string | null>(null);
   const [builtInHolidays, setBuiltInHolidays] = useState({
     seollal: true,
     chuseok: true,
@@ -40,6 +43,7 @@ export default function SettingsPage() {
     loadUser();
     checkTelegramStatus();
     checkGcalStatus();
+    checkKakaoStatus();
 
     // Handle OAuth callback result
     const params = new URLSearchParams(window.location.search);
@@ -49,6 +53,13 @@ export default function SettingsPage() {
       window.history.replaceState({}, '', '/settings');
     } else if (params.get('gcal') === 'error') {
       setGcalError('구글 캘린더 연결에 실패했습니다');
+      window.history.replaceState({}, '', '/settings');
+    }
+    if (params.get('kakao_talk') === 'success') {
+      setKakaoConnected(true);
+      window.history.replaceState({}, '', '/settings');
+    } else if (params.get('kakao_talk') === 'error') {
+      setKakaoError('카카오톡 연결에 실패했습니다');
       window.history.replaceState({}, '', '/settings');
     }
   }, []);
@@ -99,6 +110,36 @@ export default function SettingsPage() {
     } catch { /* skip */ }
   }
 
+  async function checkKakaoStatus() {
+    try {
+      const res = await fetch('/api/kakao-talk/status');
+      const data = await res.json();
+      setKakaoConnected(data.connected);
+    } catch { /* skip */ }
+  }
+
+  async function handleKakaoConnect() {
+    if (kakaoLoading) return;
+    setKakaoLoading(true);
+    setKakaoError(null);
+    try {
+      const res = await fetch('/api/kakao-talk/connect', { method: 'POST' });
+      const data = await res.json();
+      if (data.error) {
+        setKakaoError(data.error);
+        setKakaoLoading(false);
+        return;
+      }
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+        return;
+      }
+    } catch {
+      setKakaoError('연결 요청 실패');
+    }
+    setKakaoLoading(false);
+  }
+
   async function handleGcalConnect() {
     if (gcalLoading) return;
     if (!gcalGuide) {
@@ -125,19 +166,23 @@ export default function SettingsPage() {
     setGcalLoading(false);
   }
 
-  async function handleDisconnect(channel: 'telegram' | 'gcal') {
-    if (!confirm(`${channel === 'telegram' ? '텔레그램' : '구글 캘린더'} 연결을 해제할까요?`)) return;
+  async function handleDisconnect(channel: 'telegram' | 'gcal' | 'kakao') {
+    const names = { telegram: '텔레그램', gcal: '구글 캘린더', kakao: '카카오톡' };
+    if (!confirm(`${names[channel]} 연결을 해제할까요?`)) return;
+    const apiPath = channel === 'kakao' ? 'kakao-talk' : channel;
     try {
-      const res = await fetch(`/api/${channel}/disconnect`, { method: 'POST' });
+      const res = await fetch(`/api/${apiPath}/disconnect`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         if (channel === 'telegram') {
           setTelegramConnected(false);
           setTelegramDeepLink(null);
-        } else {
+        } else if (channel === 'gcal') {
           setGcalConnected(false);
           setGcalEmail(null);
           setGcalGuide(false);
+        } else if (channel === 'kakao') {
+          setKakaoConnected(false);
         }
       }
     } catch { /* skip */ }
@@ -199,12 +244,11 @@ export default function SettingsPage() {
     {
       name: '카카오톡',
       desc: '나에게 보내기로 알림',
-      connected: false,
+      connected: kakaoConnected,
       iconType: 'kakao' as const,
       channelKey: 'kakao' as const,
-      onConnect: undefined,
-      loading: false,
-      comingSoon: true,
+      onConnect: handleKakaoConnect,
+      loading: kakaoLoading,
     },
     {
       name: '구글 캘린더',
@@ -296,15 +340,13 @@ export default function SettingsPage() {
               </div>
               {ch.connected ? (
                 <button
-                  onClick={() => handleDisconnect(ch.channelKey as 'telegram' | 'gcal')}
+                  onClick={() => handleDisconnect(ch.channelKey as 'telegram' | 'gcal' | 'kakao')}
                   className="flex items-center gap-1.5 group cursor-pointer"
                 >
                   <span className="w-2 h-2 rounded-full bg-accent-green group-hover:bg-red-400" />
                   <span className="text-[13px] text-accent-green font-semibold group-hover:text-red-400">연결됨</span>
                   <span className="text-[11px] text-text-tertiary hidden group-hover:inline">해제</span>
                 </button>
-              ) : ch.comingSoon ? (
-                <span className="text-[13px] text-text-tertiary">준비중</span>
               ) : (
                 <button
                   onClick={ch.onConnect}
@@ -316,9 +358,9 @@ export default function SettingsPage() {
               )}
             </div>
           ))}
-          {(telegramError || gcalError) && (
+          {(telegramError || gcalError || kakaoError) && (
             <div className="mt-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30">
-              <p className="text-[13px] text-red-400">{telegramError || gcalError}</p>
+              <p className="text-[13px] text-red-400">{telegramError || gcalError || kakaoError}</p>
             </div>
           )}
           {gcalGuide && !gcalConnected && (

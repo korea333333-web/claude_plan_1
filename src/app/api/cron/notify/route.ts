@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { Anniversary, AlarmConfig, getNextOccurrence, calculateCount } from '@/lib/anniversary';
 import { sendTelegramNotification } from '@/lib/notifications/telegram';
 import { refreshAccessToken, createCalendarEvent } from '@/lib/notifications/google-calendar';
+import { refreshKakaoToken, sendKakaoNotification } from '@/lib/notifications/kakao';
 
 /** KST 기준 오늘 날짜 구하기 (Vercel은 UTC) */
 function getTodayKST(): Date {
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
   const service = createServiceClient();
   const todayKST = getTodayKST();
 
-  const stats = { checked: 0, telegramSent: 0, gcalCreated: 0, errors: 0 };
+  const stats = { checked: 0, telegramSent: 0, gcalCreated: 0, kakaoSent: 0, errors: 0 };
 
   try {
     // 1. 모든 기념일 조회
@@ -58,15 +59,16 @@ export async function GET(req: NextRequest) {
       // 유저의 알림 설정 조회
       const { data: settings } = await service
         .from('notification_settings')
-        .select('telegram_chat_id, gcal_refresh_token, gcal_access_token, gcal_token_expiry')
+        .select('telegram_chat_id, gcal_refresh_token, gcal_access_token, gcal_token_expiry, kakao_refresh_token, kakao_access_token, kakao_token_expiry')
         .eq('user_id', userId)
         .maybeSingle();
 
       const hasTelegram = !!settings?.telegram_chat_id;
       const hasGcal = !!settings?.gcal_refresh_token;
+      const hasKakao = !!settings?.kakao_refresh_token;
 
       // 알림 채널이 하나도 없으면 스킵
-      if (!hasTelegram && !hasGcal) continue;
+      if (!hasTelegram && !hasGcal && !hasKakao) continue;
 
       // Google 토큰 갱신 (필요시)
       let gcalAccessToken = settings?.gcal_access_token || null;
@@ -85,6 +87,32 @@ export async function GET(req: NextRequest) {
               .eq('user_id', userId);
           } else {
             gcalAccessToken = null;
+          }
+        }
+      }
+
+      // 카카오 토큰 갱신 (필요시)
+      let kakaoAccessToken = settings?.kakao_access_token || null;
+      if (hasKakao && settings?.kakao_token_expiry) {
+        const expiry = new Date(settings.kakao_token_expiry);
+        if (expiry.getTime() < Date.now() + 5 * 60 * 1000) {
+          const newToken = await refreshKakaoToken(settings.kakao_refresh_token!);
+          if (newToken) {
+            kakaoAccessToken = newToken.access_token;
+            const updateData: Record<string, string> = {
+              kakao_access_token: newToken.access_token,
+              kakao_token_expiry: new Date(Date.now() + newToken.expires_in * 1000).toISOString(),
+            };
+            // 카카오는 refresh_token 만료 1개월 미만일 때 새로 발급
+            if (newToken.refresh_token) {
+              updateData.kakao_refresh_token = newToken.refresh_token;
+            }
+            await service
+              .from('notification_settings')
+              .update(updateData)
+              .eq('user_id', userId);
+          } else {
+            kakaoAccessToken = null;
           }
         }
       }
@@ -145,6 +173,40 @@ export async function GET(req: NextRequest) {
                   channel: 'telegram',
                 });
                 stats.telegramSent++;
+              } else {
+                stats.errors++;
+              }
+            }
+          }
+
+          // --- 카카오톡 나에게 보내기 ---
+          if (kakaoAccessToken) {
+            const { data: existingKakao } = await service
+              .from('notification_log')
+              .select('id')
+              .eq('anniversary_id', ann.id)
+              .eq('alarm_index', alarmIdx)
+              .eq('target_date', targetDateStr)
+              .eq('channel', 'kakao')
+              .maybeSingle();
+
+            if (!existingKakao) {
+              const ok = await sendKakaoNotification(
+                kakaoAccessToken,
+                ann,
+                daysUntil,
+                nextDate,
+                count,
+              );
+              if (ok) {
+                await service.from('notification_log').insert({
+                  anniversary_id: ann.id,
+                  user_id: userId,
+                  alarm_index: alarmIdx,
+                  target_date: targetDateStr,
+                  channel: 'kakao',
+                });
+                stats.kakaoSent++;
               } else {
                 stats.errors++;
               }

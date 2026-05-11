@@ -63,10 +63,10 @@ export default function SettingsPage() {
   }
 
   async function handleLogout() {
+    await supabase.auth.signOut({ scope: 'global' });
     if (user?.provider === 'kakao') {
       window.location.href = '/api/auth/kakao/logout';
     } else {
-      await supabase.auth.signOut({ scope: 'global' });
       window.location.href = '/login';
     }
   }
@@ -139,9 +139,11 @@ export default function SettingsPage() {
               {user ? `${user.provider === 'kakao' ? '카카오톡' : '구글'} 로그인` : '탭하여 로그인'}
             </div>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
+          {!user && (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          )}
         </div>
       </div>
 

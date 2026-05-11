@@ -36,7 +36,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    await sendTelegramMessage(chatId, '달새김 연결 완료! 🌙\n기념일 알림을 이곳으로 보내드릴게요.');
+    const welcomeMsg = [
+      '🌙 달새김 연결을 축하합니다!',
+      '',
+      '달새김은 음력/양력 기념일을 등록하면',
+      '자동으로 미리 알려주는 서비스예요.',
+      '',
+      '📌 이런 알림을 보내드려요:',
+      '  • 기념일 7일 전 — 1차 알림',
+      '  • 기념일 3일 전 — 2차 알림',
+      '  • 기념일 당일 — 3차 알림',
+      '',
+      '음력 생일, 제사, 명절 등',
+      '매년 날짜가 바뀌는 기념일도',
+      '자동으로 양력 변환해서 알려드립니다.',
+      '',
+      '이제 이곳으로 알림이 와요! 🎉',
+    ].join('\n');
+
+    await sendTelegramMessage(chatId, welcomeMsg);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: true });

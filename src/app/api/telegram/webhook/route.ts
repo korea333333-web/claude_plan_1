@@ -10,10 +10,15 @@ export async function POST(req: NextRequest) {
     const chatId = String(message.chat.id);
     const text = message.text.trim();
 
+    console.log('[telegram-webhook] received:', JSON.stringify({ chatId, text }));
+
     if (!text.startsWith('/start')) return NextResponse.json({ ok: true });
 
     const token = text.replace('/start', '').trim();
-    if (!token) {
+    console.log('[telegram-webhook] token extracted:', JSON.stringify({ token, tokenLength: token.length }));
+
+    if (!token || token.length === 0) {
+      console.log('[telegram-webhook] no token, sending instruction');
       await sendTelegramMessage(chatId, '🌙 달새김 알림봇이에요!\n\n달새김 앱의 설정 → 텔레그램 「연결하기」 버튼을 눌러주세요.\n\n그러면 자동으로 연결됩니다!');
       return NextResponse.json({ ok: true });
     }
@@ -31,13 +36,15 @@ export async function POST(req: NextRequest) {
       .select('user_id')
       .single();
 
+    console.log('[telegram-webhook] db match result:', JSON.stringify({ data, error: error?.message }));
+
     if (error || !data) {
-      await sendTelegramMessage(chatId, '연결 토큰이 만료되었거나 잘못되었어요. 앱에서 다시 시도해주세요.');
+      await sendTelegramMessage(chatId, '연결 토큰이 만료되었거나 잘못되었어요.\n\n달새김 앱 → 설정 → 텔레그램 「연결하기」를 다시 눌러주세요.');
       return NextResponse.json({ ok: true });
     }
 
     const welcomeMsg = [
-      '🌙 달새김 연결을 축하합니다!',
+      '🌙 달새김 연결 완료!',
       '',
       '달새김은 음력/양력 기념일을 등록하면',
       '자동으로 미리 알려주는 서비스예요.',
@@ -67,19 +74,29 @@ export async function POST(req: NextRequest) {
     ].join('\n');
 
     await sendTelegramMessage(chatId, welcomeMsg);
+    console.log('[telegram-webhook] welcome message sent, connection complete');
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.error('[telegram-webhook] error:', err);
     return NextResponse.json({ ok: true });
   }
 }
 
 async function sendTelegramMessage(chatId: string, text: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) return;
+  if (!token) {
+    console.error('[telegram-webhook] TELEGRAM_BOT_TOKEN not set');
+    return;
+  }
 
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text }),
   });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error('[telegram-webhook] sendMessage failed:', res.status, body);
+  }
 }

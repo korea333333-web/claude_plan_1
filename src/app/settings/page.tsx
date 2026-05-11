@@ -18,6 +18,8 @@ export default function SettingsPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [telegramConnected, setTelegramConnected] = useState(false);
   const [telegramLoading, setTelegramLoading] = useState(false);
+  const [telegramDeepLink, setTelegramDeepLink] = useState<string | null>(null);
+  const [telegramError, setTelegramError] = useState<string | null>(null);
   const [builtInHolidays, setBuiltInHolidays] = useState({
     seollal: true,
     chuseok: true,
@@ -72,17 +74,41 @@ export default function SettingsPage() {
   }
 
   async function handleTelegramConnect() {
+    if (telegramLoading) return;
     setTelegramLoading(true);
+    setTelegramError(null);
     try {
       const res = await fetch('/api/telegram/connect', { method: 'POST' });
       const data = await res.json();
-      if (data.deepLink) {
-        window.open(data.deepLink, '_blank');
-        setTimeout(() => checkTelegramStatus(), 5000);
-        setTimeout(() => checkTelegramStatus(), 10000);
-        setTimeout(() => checkTelegramStatus(), 15000);
+      if (data.alreadyConnected) {
+        setTelegramConnected(true);
+        setTelegramLoading(false);
+        return;
       }
-    } catch { /* skip */ }
+      if (data.error) {
+        setTelegramError(data.error);
+        setTelegramLoading(false);
+        return;
+      }
+      if (data.deepLink) {
+        setTelegramDeepLink(data.deepLink);
+        window.open(data.deepLink, '_blank');
+        const poll = setInterval(async () => {
+          try {
+            const statusRes = await fetch('/api/telegram/status');
+            const statusData = await statusRes.json();
+            if (statusData.connected) {
+              setTelegramConnected(true);
+              setTelegramDeepLink(null);
+              clearInterval(poll);
+            }
+          } catch { /* skip */ }
+        }, 3000);
+        setTimeout(() => clearInterval(poll), 60000);
+      }
+    } catch {
+      setTelegramError('연결 요청 실패');
+    }
     setTelegramLoading(false);
   }
 
@@ -214,6 +240,24 @@ export default function SettingsPage() {
               )}
             </div>
           ))}
+          {telegramError && (
+            <div className="mt-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30">
+              <p className="text-[13px] text-red-400">{telegramError}</p>
+            </div>
+          )}
+          {telegramDeepLink && !telegramConnected && (
+            <div className="mt-2 px-3 py-2.5 rounded-lg bg-[rgba(0,136,204,0.08)] border border-[rgba(0,136,204,0.2)]">
+              <p className="text-[13px] text-text-secondary mb-2">텔레그램이 자동으로 안 열렸나요?</p>
+              <a
+                href={telegramDeepLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[14px] text-[#0088cc] font-semibold underline break-all"
+              >
+                여기를 눌러 텔레그램에서 시작하기
+              </a>
+            </div>
+          )}
         </SettingsSection>
 
         {/* Default Alarm Timing */}

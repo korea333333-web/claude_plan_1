@@ -430,30 +430,6 @@ export default function SettingsPage() {
           </div>
         </SettingsSection>
 
-        {/* Family Group */}
-        <SettingsSection label="가족 그룹">
-          <div className="flex items-center gap-3 py-3.5 border-b-[0.5px] border-border-subtle">
-            <div className="flex shrink-0">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold text-bg-deep border-[1.5px] border-bg-deep"
-                style={{ background: 'linear-gradient(135deg, #c9a96e, #8b6f47)' }}>
-                {initials}
-              </div>
-            </div>
-            <div className="flex-1">
-              <div className="text-[16px] font-semibold">우리 가족</div>
-              <div className="text-[13px] text-text-secondary mt-0.5">1명</div>
-            </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-          <button className="w-full py-3.5 flex items-center justify-center gap-2 text-accent-gold text-[15px] font-semibold">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            카카오톡으로 가족 초대
-          </button>
-        </SettingsSection>
 
         {/* Built-in Holidays */}
         <SettingsSection label="기본 내장 명절">

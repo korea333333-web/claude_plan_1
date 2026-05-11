@@ -59,81 +59,109 @@ export default function CalendarPage() {
 
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
 
+  const lunarRange = (() => {
+    try {
+      const first = solarToLunar(year, month + 1, 1);
+      const last = solarToLunar(year, month + 1, daysInMonth);
+      return `음력 ${first.month}월 ~ ${last.month}월`;
+    } catch { return ''; }
+  })();
+
   return (
     <div className="min-h-dvh bg-bg-deep pb-28">
       {/* Header */}
-      <div className="flex items-center justify-center gap-5 px-6 pt-[env(safe-area-inset-top,16px)] pb-6">
-        <button onClick={prevMonth} className="w-9 h-9 rounded-full bg-bg-card border border-border-card flex items-center justify-center">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
-        </button>
-        <h1 className="text-lg font-semibold pt-4">{year}년 {month + 1}월</h1>
-        <button onClick={nextMonth} className="w-9 h-9 rounded-full bg-bg-card border border-border-card flex items-center justify-center">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-        </button>
-      </div>
-
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 px-4 mb-2">
-        {weekdays.map((wd, i) => (
-          <div key={wd} className={`text-center text-[11px] font-medium py-2 ${i === 0 ? 'text-accent-red' : 'text-text-tertiary'}`}>
-            {wd}
+      <div className="px-6 pt-[env(safe-area-inset-top,16px)] pb-4">
+        <div className="flex items-baseline justify-between pt-4">
+          <div className="flex items-baseline gap-2">
+            <h1 className="text-[34px] font-extrabold tracking-[-1.5px] leading-none">{month + 1}월</h1>
+            <button onClick={prevMonth} className="text-text-secondary ml-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+            <button onClick={nextMonth} className="text-text-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
           </div>
-        ))}
+          <span className="text-[12px] text-text-secondary">{monthEvents.length}건</span>
+        </div>
+        <p className="text-[11px] text-text-secondary mt-1.5">{year}년 {month + 1}월 · {lunarRange}</p>
       </div>
 
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7 px-4 gap-0.5">
-        {days.map((d, i) => {
-          if (d === null) return <div key={`empty-${i}`} className="aspect-square" />;
-          const event = hasEvent(d);
-          const isSunday = (i % 7) === 0;
-          const todayClass = isToday(d);
-          const lunarStr = getLunarForDay(d);
-
-          return (
-            <div
-              key={d}
-              className={`aspect-square flex flex-col items-center justify-center rounded-xl relative cursor-pointer gap-0.5 ${
-                todayClass ? 'bg-accent-gold-dim' : 'hover:bg-bg-card'
-              }`}
-            >
-              <span className={`text-[15px] font-medium ${
-                todayClass ? 'text-accent-gold font-bold' : isSunday ? 'text-accent-red' : 'text-text-primary'
-              }`}>
-                {d}
-              </span>
-              <span className="text-[9px] text-text-tertiary">{lunarStr}</span>
-              {event && (
-                <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-accent-gold" />
-              )}
+      {/* Calendar */}
+      <div className="px-6 pt-2">
+        {/* Weekday headers */}
+        <div className="grid grid-cols-7 mb-1.5">
+          {weekdays.map((wd, i) => (
+            <div key={wd} className={`text-center text-[9px] ${i === 0 ? 'text-accent-red' : 'text-text-tertiary'}`}>
+              {wd}
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Days */}
+        <div className="grid grid-cols-7 gap-[2px]">
+          {days.map((d, i) => {
+            if (d === null) return <div key={`e-${i}`} className="py-[5px]" />;
+            const event = hasEvent(d);
+            const isSunday = (i % 7) === 0;
+            const isTodayD = isToday(d);
+
+            return (
+              <div key={d} className={`text-center py-[5px] relative ${isTodayD ? 'bg-accent-gold-dim rounded-md' : ''}`}>
+                <span className={`text-[11px] font-medium ${
+                  isTodayD ? 'text-accent-gold font-bold' :
+                  event?.date_type === 'lunar' ? 'text-accent-gold font-bold' :
+                  event?.date_type === 'solar' ? 'text-accent-solar font-bold' :
+                  isSunday ? 'text-accent-red' : 'text-text-secondary'
+                }`}>
+                  {d}
+                </span>
+                {event && (
+                  <div className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${
+                    event.date_type === 'lunar' ? 'bg-accent-gold' : 'bg-accent-solar'
+                  }`} />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Events this month */}
+      {/* Month events */}
       {monthEvents.length > 0 && (
-        <div className="px-5 pt-6 pb-4">
-          <h2 className="text-xs font-semibold tracking-[1.5px] uppercase text-text-tertiary px-1 mb-3.5">
-            이번 달 기념일
-          </h2>
-          <div className="space-y-2">
-            {monthEvents.map((ann) => (
-              <div key={ann.id} className="flex items-center gap-3.5 px-4 py-4 bg-bg-card border border-border-card rounded-[14px]">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ann.date_type === 'lunar' ? 'bg-accent-lunar' : 'bg-accent-solar'}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{ann.name}</div>
-                  <div className="text-xs text-text-tertiary">
-                    {ann.next_solar_date.getMonth() + 1}/{ann.next_solar_date.getDate()} ({weekdays[ann.next_solar_date.getDay()]})
-                    {ann.date_type === 'lunar' && ` · 음력 ${ann.month}/${ann.day}`}
+        <div className="px-6 pt-4 mt-2.5 border-t border-border-subtle">
+          {monthEvents.map((ann) => {
+            const nd = ann.next_solar_date;
+            const wd = weekdays[nd.getDay()];
+            const isLunar = ann.date_type === 'lunar';
+            return (
+              <div key={ann.id} className="flex gap-3 py-3.5 border-b border-border-subtle items-center">
+                <div className={`text-center shrink-0 px-1.5 ${isLunar ? '' : ''}`}>
+                  <div className="text-[10px] text-text-secondary">{wd}</div>
+                  <div className={`text-[24px] font-bold tracking-[-1px] leading-none ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>
+                    {nd.getDate()}
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-accent-gold flex-shrink-0">
-                  {ann.dday === 0 ? 'D-Day' : `D-${ann.dday}`}
-                </span>
+                <div className={`w-[2.5px] self-stretch rounded-sm ${isLunar ? 'bg-accent-gold' : 'bg-accent-solar'}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[15px] font-semibold">{ann.name}</span>
+                    {ann.count_label && (
+                      <span className={`text-[12px] font-bold ${isLunar ? 'text-accent-gold' : 'text-accent-solar'}`}>{ann.count_label}</span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-text-secondary">
+                    {isLunar && <><span className="font-semibold text-accent-gold">음 {ann.month}.{ann.day}</span></>}
+                  </div>
+                </div>
+                <div className={`flex items-baseline gap-[2px] ${ann.dday <= 14 ? '' : 'opacity-50'}`}>
+                  <span className={`text-[11px] font-medium ${ann.dday <= 14 ? 'text-accent-gold-soft' : 'text-text-tertiary'}`}>D—</span>
+                  <span className={`text-[22px] font-bold tracking-[-1px] leading-none ${ann.dday <= 14 ? 'text-accent-gold' : 'text-text-secondary'}`}>
+                    {ann.dday}
+                  </span>
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
 

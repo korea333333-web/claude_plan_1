@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { lunarToSolar, solarToLunar, formatSolarDate } from '@/lib/lunar';
+import { lunarToSolar, solarToLunar } from '@/lib/lunar';
 import type { SolarDate, LunarDate } from '@/lib/lunar';
 import BottomNav from '@/components/BottomNav';
 
@@ -10,7 +10,7 @@ export default function ConverterPage() {
   const [year, setYear] = useState(new Date().getFullYear().toString());
   const [month, setMonth] = useState('');
   const [day, setDay] = useState('');
-  const [result, setResult] = useState<{ solar?: SolarDate; lunar?: LunarDate; formatted: string } | null>(null);
+  const [result, setResult] = useState<{ solar?: SolarDate; lunar?: LunarDate } | null>(null);
   const [error, setError] = useState('');
 
   function handleConvert() {
@@ -29,18 +29,10 @@ export default function ConverterPage() {
     try {
       if (mode === 'lunarToSolar') {
         const solar = lunarToSolar(y, m, d);
-        setResult({
-          solar,
-          formatted: formatSolarDate(solar),
-        });
+        setResult({ solar });
       } else {
         const lunar = solarToLunar(y, m, d);
-        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-        const date = new Date(y, m - 1, d);
-        setResult({
-          lunar,
-          formatted: `음력 ${lunar.year}년 ${lunar.month}월 ${lunar.day}일${lunar.isLeapMonth ? ' (윤달)' : ''} · ${weekdays[date.getDay()]}요일`,
-        });
+        setResult({ lunar });
       }
     } catch {
       setError('변환할 수 없는 날짜입니다');
@@ -53,125 +45,165 @@ export default function ConverterPage() {
     setError('');
   }
 
-  const inputLabel = mode === 'lunarToSolar' ? '음력' : '양력';
-  const outputLabel = mode === 'lunarToSolar' ? '양력' : '음력';
-  const inputColor = mode === 'lunarToSolar' ? 'text-accent-lunar' : 'text-accent-solar';
-  const outputColor = mode === 'lunarToSolar' ? 'text-accent-solar' : 'text-accent-lunar';
+  function handleToday() {
+    const today = new Date();
+    if (mode === 'solarToLunar') {
+      setYear(today.getFullYear().toString());
+      setMonth((today.getMonth() + 1).toString());
+      setDay(today.getDate().toString());
+    } else {
+      const lunar = solarToLunar(today.getFullYear(), today.getMonth() + 1, today.getDate());
+      setYear(lunar.year.toString());
+      setMonth(lunar.month.toString());
+      setDay(lunar.day.toString());
+    }
+    setResult(null);
+  }
+
+  const isLunarInput = mode === 'lunarToSolar';
+  const inputLabel = isLunarInput ? '음력' : '양력';
+  const outputLabel = isLunarInput ? '양력' : '음력';
+  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+
+  const outputDate = result
+    ? isLunarInput && result.solar
+      ? result.solar
+      : !isLunarInput && result.lunar
+        ? result.lunar
+        : null
+    : null;
+
+  const outputMeta = (() => {
+    if (!outputDate) return '';
+    if (isLunarInput && result?.solar) {
+      const d = new Date(result.solar.year, result.solar.month - 1, result.solar.day);
+      return `${weekdays[d.getDay()]}요일`;
+    }
+    if (!isLunarInput && result?.lunar) {
+      return result.lunar.isLeapMonth ? '윤달' : '';
+    }
+    return '';
+  })();
 
   return (
     <div className="min-h-dvh bg-bg-deep pb-28">
       {/* Header */}
-      <div className="text-center px-6 pt-[env(safe-area-inset-top,16px)] pb-7">
-        <h1 className="text-lg font-semibold mb-1 pt-4">음력 ↔ 양력 변환</h1>
-        <p className="text-[13px] text-text-tertiary">날짜를 입력하면 바로 변환됩니다</p>
+      <div className="px-6 pt-[env(safe-area-inset-top,16px)] pb-5">
+        <h1 className="text-[34px] font-extrabold tracking-[-1.5px] leading-none pt-4">변환</h1>
+        <p className="text-[11px] text-text-secondary mt-1.5">음력과 양력을 자유롭게 오가기</p>
       </div>
 
-      {/* Converter Card */}
-      <div className="mx-5 bg-bg-card border border-border-card rounded-[28px] p-6 relative">
-        {/* Input Section */}
-        <div className="mb-6">
-          <h3 className={`text-[11px] font-semibold tracking-[1.5px] uppercase mb-3.5 ${inputColor}`}>
-            {inputLabel} (입력)
-          </h3>
-          <div className="flex gap-2">
-            {[
-              { label: '연도', value: year, setter: setYear, placeholder: '2026' },
-              { label: '월', value: month, setter: setMonth, placeholder: '3' },
-              { label: '일', value: day, setter: setDay, placeholder: '27' },
-            ].map((field) => (
-              <div key={field.label} className="flex-1 bg-bg-input border border-border-card rounded-[14px] p-4 text-center">
-                <div className="text-[10px] text-text-tertiary mb-1">{field.label}</div>
+      {/* Direction toggle */}
+      <div className="px-6 pb-5">
+        <div className="flex bg-bg-card border border-border-strong rounded-full p-1">
+          <button
+            onClick={() => { setMode('lunarToSolar'); setResult(null); }}
+            className={`flex-1 py-2.5 rounded-full text-[12px] font-medium text-center flex items-center justify-center gap-1.5 transition-all ${
+              mode === 'lunarToSolar' ? 'bg-accent-gold text-bg-deep font-bold' : 'text-text-secondary'
+            }`}
+          >
+            음 <span className="text-[10px]">→</span> 양
+          </button>
+          <button
+            onClick={() => { setMode('solarToLunar'); setResult(null); }}
+            className={`flex-1 py-2.5 rounded-full text-[12px] font-medium text-center flex items-center justify-center gap-1.5 transition-all ${
+              mode === 'solarToLunar' ? 'bg-accent-gold text-bg-deep font-bold' : 'text-text-secondary'
+            }`}
+          >
+            양 <span className="text-[10px]">→</span> 음
+          </button>
+        </div>
+      </div>
+
+      {/* Input card */}
+      <div className={`mx-6 rounded-2xl p-[18px] border-[0.5px] ${
+        isLunarInput
+          ? 'bg-[rgba(201,169,110,0.06)] border-[rgba(201,169,110,0.3)]'
+          : 'bg-[rgba(139,157,195,0.06)] border-[rgba(139,157,195,0.3)]'
+      }`}>
+        <div className="flex justify-between items-center mb-3.5">
+          <div className={`flex items-center gap-2 text-[11px] font-bold tracking-[2px] ${isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>
+            <span className={`w-[7px] h-[7px] ${isLunarInput ? 'bg-accent-gold' : 'bg-accent-solar'}`} />
+            {inputLabel}
+          </div>
+          <button onClick={handleToday} className="text-[11px] text-text-secondary">오늘</button>
+        </div>
+        <div className="grid grid-cols-3 gap-2.5">
+          {[
+            { label: '년', value: year, setter: setYear },
+            { label: '월', value: month, setter: setMonth },
+            { label: '일', value: day, setter: setDay },
+          ].map((f) => (
+            <div key={f.label}>
+              <div className="text-[10px] text-text-tertiary tracking-[1px] mb-1">{f.label}</div>
+              <div className="bg-bg-card border border-border-strong rounded-lg">
                 <input
                   type="number"
-                  value={field.value}
-                  onChange={(e) => field.setter(e.target.value)}
-                  placeholder={field.placeholder}
-                  className="w-full text-center text-xl font-semibold bg-transparent outline-none text-text-primary placeholder:text-text-tertiary"
+                  value={f.value}
+                  onChange={(e) => f.setter(e.target.value)}
+                  className="w-full text-center text-[18px] font-bold tracking-[-0.5px] bg-transparent outline-none text-text-primary py-3 px-2"
                 />
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Divider + Swap */}
-        <div className="h-px bg-border-card -mx-6 mb-6" />
-        <button
-          onClick={handleSwap}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-accent-gold flex items-center justify-center shadow-[0_4px_16px_rgba(201,169,110,0.3)] z-10"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#0f1117">
-            <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" stroke="#0f1117" strokeWidth="2" fill="none" />
-          </svg>
-        </button>
-
-        {/* Output Section */}
-        <div>
-          <h3 className={`text-[11px] font-semibold tracking-[1.5px] uppercase mb-3.5 ${outputColor}`}>
-            {outputLabel} (결과)
-          </h3>
-          <div className="flex gap-2">
-            {result ? (
-              mode === 'lunarToSolar' && result.solar ? (
-                <>
-                  <div className="flex-1 bg-bg-input border border-border-card rounded-[14px] p-4 text-center">
-                    <div className="text-[10px] text-text-tertiary mb-1">연도</div>
-                    <div className="text-xl font-semibold">{result.solar.year}</div>
-                  </div>
-                  <div className="flex-1 bg-bg-input border border-border-card rounded-[14px] p-4 text-center">
-                    <div className="text-[10px] text-text-tertiary mb-1">월</div>
-                    <div className="text-xl font-semibold">{result.solar.month}</div>
-                  </div>
-                  <div className="flex-1 bg-bg-input border border-border-card rounded-[14px] p-4 text-center">
-                    <div className="text-[10px] text-text-tertiary mb-1">일</div>
-                    <div className="text-xl font-semibold">{result.solar.day}</div>
-                  </div>
-                </>
-              ) : result.lunar ? (
-                <>
-                  <div className="flex-1 bg-bg-input border border-border-card rounded-[14px] p-4 text-center">
-                    <div className="text-[10px] text-text-tertiary mb-1">연도</div>
-                    <div className="text-xl font-semibold">{result.lunar.year}</div>
-                  </div>
-                  <div className="flex-1 bg-bg-input border border-border-card rounded-[14px] p-4 text-center">
-                    <div className="text-[10px] text-text-tertiary mb-1">월</div>
-                    <div className="text-xl font-semibold">{result.lunar.month}</div>
-                  </div>
-                  <div className="flex-1 bg-bg-input border border-border-card rounded-[14px] p-4 text-center">
-                    <div className="text-[10px] text-text-tertiary mb-1">일</div>
-                    <div className="text-xl font-semibold">{result.lunar.day}</div>
-                  </div>
-                </>
-              ) : null
-            ) : (
-              <div className="flex-1 bg-bg-input border border-border-card rounded-[14px] p-4 text-center">
-                <div className="text-text-tertiary text-sm py-3">변환 버튼을 눌러주세요</div>
-              </div>
-            )}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Convert Button */}
-      <div className="px-5 mt-5">
+      {/* Swap */}
+      <div className="relative text-center py-3.5">
+        <div className="absolute top-1/2 left-6 right-6 h-[0.5px] bg-border-subtle" />
+        <button
+          onClick={handleSwap}
+          className="relative w-10 h-10 rounded-full bg-bg-deep border border-accent-gold-dim inline-flex items-center justify-center text-accent-gold"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 014-4h14" />
+            <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 01-4 4H3" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Output card */}
+      <div className={`mx-6 rounded-2xl p-[18px] border-[0.5px] ${
+        !isLunarInput
+          ? 'bg-[rgba(201,169,110,0.06)] border-[rgba(201,169,110,0.3)]'
+          : 'bg-[rgba(139,157,195,0.06)] border-[rgba(139,157,195,0.3)]'
+      }`}>
+        <div className="flex justify-between items-center mb-3.5">
+          <div className={`flex items-center gap-2 text-[11px] font-bold tracking-[2px] ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>
+            <span className={`w-[7px] h-[7px] ${!isLunarInput ? 'bg-accent-gold' : 'bg-accent-solar'}`} />
+            {outputLabel}
+          </div>
+        </div>
+        {outputDate ? (
+          <>
+            <div className="flex items-baseline gap-2">
+              <span className={`text-[42px] font-bold tracking-[-1.8px] leading-none ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>{outputDate.year}</span>
+              <span className={`text-[28px] opacity-55 font-light ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>.</span>
+              <span className={`text-[42px] font-bold tracking-[-1.8px] leading-none ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>{outputDate.month}</span>
+              <span className={`text-[28px] opacity-55 font-light ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>.</span>
+              <span className={`text-[42px] font-bold tracking-[-1.8px] leading-none ${!isLunarInput ? 'text-accent-gold' : 'text-accent-solar'}`}>{outputDate.day}</span>
+            </div>
+            {outputMeta && <p className="text-[12px] text-text-secondary mt-1">{outputMeta}</p>}
+          </>
+        ) : (
+          <p className="text-text-tertiary text-[13px] py-6 text-center">변환 버튼을 눌러주세요</p>
+        )}
+      </div>
+
+      {/* Convert button */}
+      <div className="px-6 mt-5">
         <button
           onClick={handleConvert}
           disabled={!month || !day}
-          className="w-full py-4 rounded-[14px] bg-accent-gold text-bg-deep text-base font-semibold disabled:opacity-40 transition-opacity"
+          className="w-full py-4 rounded-full bg-accent-gold text-bg-deep text-base font-bold disabled:opacity-40 transition-opacity"
         >
           변환하기
         </button>
       </div>
 
-      {/* Result */}
-      {result && (
-        <div className="mx-5 mt-5 p-5 bg-accent-gold/[0.06] border border-accent-gold/15 rounded-[20px] text-center">
-          <div className="text-xs text-text-tertiary mb-2">변환 결과</div>
-          <div className="text-2xl font-semibold text-accent-gold">{result.formatted}</div>
-        </div>
-      )}
-
       {error && (
-        <div className="mx-5 mt-5 p-4 bg-accent-red/10 border border-accent-red/20 rounded-[14px] text-center text-sm text-accent-red">
+        <div className="mx-6 mt-4 p-4 bg-accent-red/10 border border-accent-red/20 rounded-2xl text-center text-sm text-accent-red">
           {error}
         </div>
       )}

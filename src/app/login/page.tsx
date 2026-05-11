@@ -6,7 +6,6 @@ export default function LoginPage() {
   const supabase = createClient();
 
   const handleLogin = async (provider: 'kakao' | 'google') => {
-    // Google 세션이 남아있을 수 있으므로 먼저 정리
     await supabase.auth.signOut();
 
     if (provider === 'kakao') {
@@ -28,24 +27,30 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh flex flex-col relative overflow-hidden bg-bg-deep">
-      {/* Background glow */}
+      {/* Night gradient */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[300px] h-[300px] rounded-full bg-accent-gold/[0.06] blur-[100px]" />
-        <div className="absolute top-[50%] left-[70%] w-[200px] h-[200px] rounded-full bg-accent-lunar/[0.04] blur-[80px]" />
+        <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[300px] h-[300px] rounded-full opacity-100"
+          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(60,80,140,0.15) 0%, transparent 60%)' }} />
       </div>
 
       <div className="flex-1 flex flex-col justify-center px-9 relative z-10">
-        {/* Moon */}
-        <div
-          className="w-20 h-20 rounded-full mb-10"
-          style={{
-            background: 'radial-gradient(circle at 35% 35%, #f0ece4 0%, #c9a96e 40%, rgba(201,169,110,0.3) 70%, transparent 100%)',
-            boxShadow: '0 0 60px rgba(201, 169, 110, 0.15), 0 0 120px rgba(201, 169, 110, 0.05)',
-          }}
-        />
+        {/* Moon SVG */}
+        <div className="mb-10">
+          <svg width="80" height="80" viewBox="0 0 100 100" style={{ filter: 'drop-shadow(0 0 30px rgba(255,230,180,0.2))' }}>
+            <defs>
+              <radialGradient id="login-moon" cx="35%" cy="40%">
+                <stop offset="0%" stopColor="#fff8e1" />
+                <stop offset="55%" stopColor="#f0d896" />
+                <stop offset="100%" stopColor="#c9a96e" />
+              </radialGradient>
+            </defs>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(201,169,110,0.22)" strokeWidth="0.5" strokeDasharray="0.8 1.8" />
+            <circle cx="50" cy="50" r="38" fill="url(#login-moon)" />
+          </svg>
+        </div>
 
-        <h1 className="text-[32px] font-light tracking-[-0.5px] mb-2">
-          <span className="text-accent-gold font-medium">달</span>새김
+        <h1 className="text-[40px] font-black tracking-[-2px] leading-none mb-2">
+          달새김
         </h1>
         <p className="text-text-secondary text-[15px] leading-relaxed mb-[60px]">
           소중한 날을 달에 새기다
@@ -66,7 +71,7 @@ export default function LoginPage() {
 
         <button
           onClick={() => handleLogin('google')}
-          className="flex items-center justify-center gap-2.5 w-full py-4 rounded-[14px] text-[15px] font-medium cursor-pointer bg-bg-card border border-border-card text-text-primary transition-opacity hover:opacity-90"
+          className="flex items-center justify-center gap-2.5 w-full py-4 rounded-[14px] text-[15px] font-medium cursor-pointer border border-border-strong text-text-primary bg-bg-card-strong transition-opacity hover:opacity-90"
         >
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4" />

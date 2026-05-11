@@ -22,6 +22,9 @@ export default function SettingsPage() {
     buddha: true,
     daeboreum: false,
     dano: false,
+    hansik: false,
+    dongji: false,
+    chilseok: false,
   });
 
   useEffect(() => {
@@ -69,40 +72,40 @@ export default function SettingsPage() {
 
   const notificationChannels = [
     {
-      icon: '💬',
-      iconBg: 'bg-[rgba(254,229,0,0.15)]',
       name: '카카오톡',
-      desc: '나에게 보내기',
+      desc: '나에게 보내기로 알림',
       connected: true,
+      iconType: 'kakao' as const,
     },
     {
-      icon: '✈',
-      iconBg: 'bg-[rgba(0,136,204,0.12)]',
       name: '텔레그램',
       desc: '봇 알림',
-      connected: false,
+      connected: true,
+      iconType: 'telegram' as const,
     },
     {
-      icon: '📅',
-      iconBg: 'bg-[rgba(66,133,244,0.12)]',
       name: '구글 캘린더',
-      desc: '일정 자동 등록',
+      desc: '일정으로 자동 등록',
       connected: false,
+      iconType: 'gcal' as const,
     },
   ];
 
-  const alarmDefaults = [
-    { label: '1차 알림', value: '7일 전' },
-    { label: '2차 알림', value: '3일 전' },
-    { label: '3차 알림', value: '당일' },
+  const timingCards = [
+    { level: '1차', when: '7일 전' },
+    { level: '2차', when: '3일 전' },
+    { level: '3차', when: '당일' },
   ];
 
-  const holidays = [
-    { key: 'seollal' as const, name: '설날' },
-    { key: 'chuseok' as const, name: '추석' },
-    { key: 'buddha' as const, name: '석가탄신일' },
-    { key: 'daeboreum' as const, name: '정월대보름' },
-    { key: 'dano' as const, name: '단오' },
+  const holidays: { key: keyof typeof builtInHolidays; name: string }[] = [
+    { key: 'seollal', name: '설날' },
+    { key: 'chuseok', name: '추석' },
+    { key: 'buddha', name: '석가탄신일' },
+    { key: 'daeboreum', name: '정월대보름' },
+    { key: 'dano', name: '단오' },
+    { key: 'hansik', name: '한식' },
+    { key: 'dongji', name: '동지' },
+    { key: 'chilseok', name: '칠석' },
   ];
 
   const initials = user?.name?.charAt(0) || '?';
@@ -110,154 +113,186 @@ export default function SettingsPage() {
   return (
     <div className="min-h-dvh bg-bg-deep pb-28">
       {/* Header */}
-      <div className="px-6 pt-[env(safe-area-inset-top,16px)] pb-6">
-        <h1 className="text-lg font-semibold pt-4">설정</h1>
+      <div className="px-6 pt-[env(safe-area-inset-top,16px)] pb-5">
+        <h1 className="text-[34px] font-extrabold tracking-[-1.5px] leading-none pt-4">설정</h1>
+        <p className="text-[11px] text-text-secondary mt-1.5">알림 · 가족 · 계정 관리</p>
       </div>
 
       {/* Account */}
-      <Section label="계정">
+      <div className="mx-6 border-t border-border-strong border-b-[0.5px] border-b-border-subtle mb-5">
         <div
-          className={`flex items-center gap-3.5 px-4 py-4 ${!user ? 'cursor-pointer' : ''}`}
+          className={`flex items-center gap-3.5 py-4 ${!user ? 'cursor-pointer' : ''}`}
           onClick={() => { if (!user) router.push('/login'); }}
         >
           {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt="" className="w-11 h-11 rounded-full object-cover" />
+            <img src={user.avatarUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
           ) : (
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-accent-gold to-accent-lunar flex items-center justify-center text-lg font-semibold text-bg-deep">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-[18px] font-bold text-bg-deep"
+              style={{ background: 'linear-gradient(135deg, #c9a96e, #8b6f47)' }}>
               {initials}
             </div>
           )}
           <div className="flex-1">
-            <div className="text-[15px] font-semibold">{user?.name || '로그인 필요'}</div>
-            <div className="text-xs text-text-tertiary">
-              {user ? `${user.provider === 'kakao' ? '카카오' : '구글'} 로그인` : '탭하여 로그인'}
+            <div className="text-[16px] font-semibold tracking-[-0.3px]">{user?.name || '로그인 필요'}</div>
+            <div className="text-[11px] text-text-secondary mt-0.5">
+              {user ? `${user.provider === 'kakao' ? '카카오톡' : '구글'} 로그인` : '탭하여 로그인'}
             </div>
           </div>
-          <span className="text-text-tertiary">›</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
         </div>
-      </Section>
+      </div>
 
       {/* Logout */}
       {user && (
-        <div className="px-5 -mt-4 mb-7">
+        <div className="px-6 mb-6">
           <button
             onClick={handleLogout}
-            className="w-full py-3 rounded-[14px] border border-border-card text-text-tertiary text-sm font-medium hover:bg-bg-card transition-colors"
+            className="w-full py-3 rounded-full border border-border-strong text-text-tertiary text-[13px] font-medium transition-colors"
           >
             로그아웃
           </button>
         </div>
       )}
 
-      {/* Notification Channels */}
-      <Section label="알림 채널">
-        {notificationChannels.map((ch) => (
-          <SettingItem key={ch.name}>
-            <div className="flex items-center gap-3.5 flex-1">
-              <div className={`w-9 h-9 rounded-[10px] ${ch.iconBg} flex items-center justify-center text-lg`}>
-                {ch.icon}
+      <div className="px-6 space-y-6">
+        {/* Notification Channels */}
+        <SettingsSection label="알림 채널">
+          {notificationChannels.map((ch) => (
+            <div key={ch.name} className="flex items-center gap-3.5 py-3 border-b-[0.5px] border-border-subtle last:border-b-0">
+              <ChannelIcon type={ch.iconType} />
+              <div className="flex-1">
+                <div className="text-[13px] font-semibold">{ch.name}</div>
+                <div className="text-[10px] text-text-secondary mt-0.5">{ch.desc}</div>
               </div>
-              <div>
-                <div className="text-sm font-medium">{ch.name}</div>
-                <div className="text-xs text-text-tertiary">{ch.desc}</div>
+              {ch.connected ? (
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent-green" />
+                  <span className="text-[10px] text-accent-green font-semibold">연결됨</span>
+                </div>
+              ) : (
+                <button className="px-3 py-1.5 rounded-full bg-accent-gold-dim border-[0.5px] border-accent-gold text-accent-gold text-[11px] font-semibold">
+                  연결하기
+                </button>
+              )}
+            </div>
+          ))}
+        </SettingsSection>
+
+        {/* Default Alarm Timing */}
+        <SettingsSection label="기본 알림 시점">
+          <div className="flex gap-2">
+            {timingCards.map((t) => (
+              <div key={t.level} className="flex-1 py-3 px-2.5 bg-accent-gold-dim border-[0.5px] border-accent-gold rounded-xl text-center">
+                <div className="text-[9px] text-accent-gold-soft tracking-[1px] mb-1">{t.level}</div>
+                <div className="text-[18px] text-accent-gold font-bold tracking-[-0.5px] leading-none">{t.when}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-text-tertiary mt-2 text-center">탭해서 변경 · 새 기념일에 기본 적용</p>
+        </SettingsSection>
+
+        {/* Family Group */}
+        <SettingsSection label="가족 그룹">
+          <div className="flex items-center gap-3 py-3 border-b-[0.5px] border-border-subtle">
+            <div className="flex shrink-0">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-bg-deep border-[1.5px] border-bg-deep"
+                style={{ background: 'linear-gradient(135deg, #c9a96e, #8b6f47)' }}>
+                {initials}
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${
-                ch.connected
-                  ? 'text-accent-green bg-[rgba(125,184,138,0.12)]'
-                  : 'text-text-tertiary bg-bg-input'
-              }`}>
-                {ch.connected ? '연결됨' : '연결하기'}
-              </span>
-              <span className="text-text-tertiary">›</span>
+            <div className="flex-1">
+              <div className="text-[13px] font-semibold">우리 가족</div>
+              <div className="text-[10px] text-text-secondary mt-0.5">1명</div>
             </div>
-          </SettingItem>
-        ))}
-      </Section>
-
-      {/* Default Alarms */}
-      <Section label="기본 알림 시점">
-        {alarmDefaults.map((alarm) => (
-          <SettingItem key={alarm.label}>
-            <div className="flex items-center gap-3.5 flex-1">
-              <div className="w-9 h-9 rounded-[10px] bg-accent-lunar-dim flex items-center justify-center text-lg">🔔</div>
-              <div className="text-sm font-medium">{alarm.label}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] text-text-tertiary">{alarm.value}</span>
-              <span className="text-text-tertiary">›</span>
-            </div>
-          </SettingItem>
-        ))}
-      </Section>
-
-      {/* Built-in Holidays */}
-      <Section label="기본 내장 기념일">
-        {holidays.map((holiday) => (
-          <SettingItem key={holiday.key}>
-            <div className="flex items-center gap-3.5 flex-1">
-              <div className="w-9 h-9 rounded-[10px] bg-accent-solar-dim flex items-center justify-center text-lg">🌙</div>
-              <div className="text-sm font-medium">{holiday.name}</div>
-            </div>
-            <button
-              onClick={() => setBuiltInHolidays(prev => ({ ...prev, [holiday.key]: !prev[holiday.key] }))}
-              className={`w-11 h-[26px] rounded-full relative transition-colors ${
-                builtInHolidays[holiday.key] ? 'bg-accent-gold' : 'bg-text-tertiary'
-              }`}
-            >
-              <div className={`w-5 h-5 rounded-full bg-white absolute top-[3px] transition-transform ${
-                builtInHolidays[holiday.key] ? 'translate-x-[21px]' : 'translate-x-[3px]'
-              }`} />
-            </button>
-          </SettingItem>
-        ))}
-      </Section>
-
-      {/* Family */}
-      <Section label="가족 그룹">
-        <SettingItem>
-          <div className="flex items-center gap-3.5 flex-1">
-            <div className="w-9 h-9 rounded-[10px] bg-accent-gold-dim flex items-center justify-center text-lg">👨‍👩‍👧‍👦</div>
-            <div>
-              <div className="text-sm font-medium">우리 가족</div>
-              <div className="text-xs text-text-tertiary">1명</div>
-            </div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-tertiary">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] text-text-tertiary">관리</span>
-            <span className="text-text-tertiary">›</span>
+          <button className="w-full py-3 flex items-center justify-center gap-1.5 text-accent-gold text-[12px] font-semibold">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            카카오톡으로 가족 초대
+          </button>
+        </SettingsSection>
+
+        {/* Built-in Holidays */}
+        <SettingsSection label="기본 내장 명절">
+          <div className="flex flex-wrap gap-1.5">
+            {holidays.map((h) => (
+              <button
+                key={h.key}
+                onClick={() => setBuiltInHolidays(prev => ({ ...prev, [h.key]: !prev[h.key] }))}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-semibold border-[0.5px] transition-all ${
+                  builtInHolidays[h.key]
+                    ? 'bg-accent-gold-dim border-accent-gold text-accent-gold'
+                    : 'bg-bg-card border-border-strong text-text-secondary font-medium'
+                }`}
+              >
+                {h.name}
+                {builtInHolidays[h.key] && (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            ))}
           </div>
-        </SettingItem>
-        <SettingItem>
-          <div className="flex items-center gap-3.5 flex-1">
-            <div className="w-9 h-9 rounded-[10px] bg-accent-gold-dim flex items-center justify-center text-lg">➕</div>
-            <div className="text-sm font-medium text-accent-gold">카카오톡으로 초대</div>
-          </div>
-          <span className="text-text-tertiary">›</span>
-        </SettingItem>
-      </Section>
+        </SettingsSection>
+
+        {/* Footer */}
+        <div className="pt-4 border-t-[0.5px] border-border-subtle flex gap-3.5 text-[10px] text-text-tertiary pb-4">
+          <span>이용약관</span>
+          <span>·</span>
+          <span>개인정보처리방침</span>
+          <span>·</span>
+          <span>v1.0.0</span>
+        </div>
+      </div>
 
       <BottomNav />
     </div>
   );
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function SettingsSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="px-5 mb-7">
-      <h2 className="text-[11px] font-semibold tracking-[1.5px] uppercase text-text-tertiary px-1 mb-2.5">{label}</h2>
-      <div className="bg-bg-card border border-border-card rounded-[20px] overflow-hidden divide-y divide-border-subtle">
-        {children}
-      </div>
+    <div>
+      <div className="text-[10px] text-accent-gold font-bold tracking-[2px] mb-3">{label}</div>
+      {children}
     </div>
   );
 }
 
-function SettingItem({ children }: { children: React.ReactNode }) {
+function ChannelIcon({ type }: { type: 'kakao' | 'telegram' | 'gcal' }) {
+  const styles = {
+    kakao: 'bg-[rgba(255,235,59,0.12)] border-[rgba(255,235,59,0.3)]',
+    telegram: 'bg-[rgba(0,136,204,0.12)] border-[rgba(0,136,204,0.3)]',
+    gcal: 'bg-[rgba(66,133,244,0.12)] border-[rgba(66,133,244,0.3)]',
+  };
+
   return (
-    <div className="flex items-center justify-between px-4 py-4">
-      {children}
+    <div className={`w-9 h-9 rounded-[10px] border-[0.5px] flex items-center justify-center shrink-0 ${styles[type]}`}>
+      {type === 'kakao' && (
+        <svg width="16" height="16" viewBox="0 0 20 20">
+          <path d="M10 3C5.58 3 2 5.87 2 9.35c0 2.2 1.45 4.13 3.63 5.25-.16.58-.58 2.1-.67 2.43-.1.4.15.4.31.29.13-.08 2.03-1.38 2.85-1.95.61.09 1.24.13 1.88.13 4.42 0 8-2.87 8-6.35S14.42 3 10 3z" fill="#3c1e1e" />
+        </svg>
+      )}
+      {type === 'telegram' && (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#0088cc">
+          <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
+        </svg>
+      )}
+      {type === 'gcal' && (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4285f4" strokeWidth="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+      )}
     </div>
   );
 }

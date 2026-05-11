@@ -3,21 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
+import { useAuth } from '@/lib/useAuth';
 import BottomNav from '@/components/BottomNav';
 import InstallGuide from '@/components/InstallGuide';
 import { HOLIDAY_PRESETS, SOLAR_TERM_PRESETS, SOLAR_TERM_SEASONS, type PresetItem } from '@/lib/presets';
 
-interface UserProfile {
-  name: string;
-  email: string;
-  provider: 'google' | 'kakao';
-  avatarUrl?: string;
-}
-
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const auth = useAuth();
+  const user = auth.provider ? { name: auth.name, email: auth.email, provider: auth.provider, avatarUrl: auth.avatarUrl } : null;
   const [telegramConnected, setTelegramConnected] = useState(false);
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [telegramDeepLink, setTelegramDeepLink] = useState<string | null>(null);
@@ -33,13 +28,11 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [addedPresets, setAddedPresets] = useState<Set<string>>(new Set());
   const [presetsLoading, setPresetsLoading] = useState(true);
-  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('dalsaegim-theme') as 'dark' | 'light' | null;
     if (saved) setTheme(saved);
 
-    loadUser().then(() => loadPresets());
     checkTelegramStatus();
     checkGcalStatus();
     checkKakaoStatus();
@@ -63,50 +56,10 @@ export default function SettingsPage() {
     }
   }, []);
 
-  async function loadUser() {
-    // 1) Supabase 세션 확인
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (authUser) {
-      const prov = authUser.user_metadata?.provider || authUser.app_metadata?.provider;
-      setUser({
-        name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '사용자',
-        email: authUser.email || '',
-        provider: prov === 'kakao' ? 'kakao' : 'google',
-        avatarUrl: authUser.user_metadata?.avatar_url,
-      });
-      setSupabaseUserId(authUser.id);
-      return;
-    }
-
-    // 2) 카카오 세션 확인
-    try {
-      const res = await fetch('/api/auth/kakao/session');
-      const data = await res.json();
-      if (data.user) {
-        setUser({
-          name: data.user.nickname,
-          email: '',
-          provider: 'kakao',
-          avatarUrl: data.user.profileImage,
-        });
-
-        // 3) Supabase 세션 복구 시도
-        try {
-          const refreshRes = await fetch('/api/auth/refresh-session', { method: 'POST' });
-          const refreshData = await refreshRes.json();
-          if (refreshData.success && refreshData.userId) {
-            setSupabaseUserId(refreshData.userId);
-            // 쿠키가 갱신됐으므로 Supabase 클라이언트 세션도 갱신
-            await supabase.auth.getSession();
-          }
-        } catch {
-          console.error('[settings] Supabase session refresh failed');
-        }
-      }
-    } catch {
-      // Kakao session check failed
-    }
-  }
+  // auth 준비되면 프리셋 로드
+  useEffect(() => {
+    if (!auth.loading) loadPresets();
+  }, [auth.loading, auth.userId]);
 
   async function checkTelegramStatus() {
     try {
@@ -253,12 +206,7 @@ export default function SettingsPage() {
   }
 
   async function loadPresets() {
-    // supabaseUserId가 설정될 때까지 기다리지 않고, 직접 getUser 시도
-    let userId = supabaseUserId;
-    if (!userId) {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      userId = authUser?.id || null;
-    }
+    const userId = auth.userId;
     if (!userId) { setPresetsLoading(false); return; }
     const { data } = await supabase
       .from('anniversaries')
@@ -277,14 +225,8 @@ export default function SettingsPage() {
     setPresetsLoading(false);
   }
 
-  async function getAuthUserId(): Promise<string | null> {
-    if (supabaseUserId) return supabaseUserId;
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    return authUser?.id || null;
-  }
-
   async function togglePreset(preset: PresetItem) {
-    const userId = await getAuthUserId();
+    const userId = auth.userId;
     if (!userId) return;
     const isAdded = addedPresets.has(preset.key);
     if (isAdded) {
@@ -308,7 +250,7 @@ export default function SettingsPage() {
   }
 
   async function addAllPresets(presets: PresetItem[]) {
-    const userId = await getAuthUserId();
+    const userId = auth.userId;
     if (!userId) return;
     const toAdd = presets.filter(p => !addedPresets.has(p.key));
     if (toAdd.length === 0) return;
@@ -326,7 +268,7 @@ export default function SettingsPage() {
   }
 
   async function removeAllPresets(presets: PresetItem[]) {
-    const userId = await getAuthUserId();
+    const userId = auth.userId;
     if (!userId) return;
     const toRemove = presets.filter(p => addedPresets.has(p.key));
     if (toRemove.length === 0) return;

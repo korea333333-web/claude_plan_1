@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
+import { useAuth } from '@/lib/useAuth';
 import { enrichAnniversary, sortByDDay, groupByMonth, DEFAULT_ANNIVERSARIES } from '@/lib/anniversary';
 import { solarToLunar } from '@/lib/lunar';
 import type { Anniversary, AnniversaryWithDDay } from '@/lib/anniversary';
@@ -10,53 +11,22 @@ import MoonPhase from '@/components/MoonPhase';
 import BottomNav from '@/components/BottomNav';
 import Link from 'next/link';
 
-interface AuthUser {
-  name: string;
-  provider: 'google' | 'kakao';
-  avatarUrl?: string;
-}
-
 export default function HomePage() {
   const [anniversaries, setAnniversaries] = useState<AnniversaryWithDDay[]>([]);
   const [loading, setLoading] = useState(true);
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const auth = useAuth();
   const supabase = createClient();
 
+  // auth가 로딩 끝나면 데이터 로드
   useEffect(() => {
-    loadUser();
-  }, []);
+    if (auth.loading) return;
 
-  async function loadUser() {
-    setLoading(true);
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const prov = user.user_metadata?.provider || user.app_metadata?.provider;
-      setAuthUser({
-        name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '사용자',
-        provider: prov === 'kakao' ? 'kakao' : 'google',
-        avatarUrl: user.user_metadata?.avatar_url,
-      });
-      await loadAnniversaries(user.id);
-      return;
+    if (auth.userId) {
+      loadAnniversaries(auth.userId);
+    } else {
+      useDemoData();
     }
-
-    try {
-      const res = await fetch('/api/auth/kakao/session');
-      const data = await res.json();
-      if (data.user) {
-        setAuthUser({
-          name: data.user.nickname,
-          provider: 'kakao',
-          avatarUrl: data.user.profileImage,
-        });
-      }
-    } catch {
-      // Kakao session check failed
-    }
-
-    useDemoData();
-  }
+  }, [auth.loading, auth.userId]);
 
   async function loadAnniversaries(userId: string) {
     const { data, error } = await supabase
@@ -119,6 +89,7 @@ export default function HomePage() {
   const phaseName = getMoonPhaseName(lunarDayNum);
   const countdown = getMoonCountdown(lunarDayNum);
 
+  const authUser = auth.provider ? { name: auth.name, provider: auth.provider, avatarUrl: auth.avatarUrl } : null;
   const firstName = authUser?.name?.charAt(0) || '';
 
   return (

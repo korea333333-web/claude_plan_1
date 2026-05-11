@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
+import { useAuth } from '@/lib/useAuth';
 import type { Category, RepeatType } from '@/lib/anniversary';
 import BottomNav from '@/components/BottomNav';
 import DatePickerSheet from '@/components/DatePickerSheet';
@@ -25,6 +26,7 @@ export default function EditPage() {
   const params = useParams();
   const id = params.id as string;
   const supabase = createClient();
+  const auth = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
@@ -45,8 +47,8 @@ export default function EditPage() {
   const dayOptions = [0, 1, 2, 3, 5, 7, 14, 30];
 
   useEffect(() => {
-    loadAnniversary();
-  }, [id]);
+    if (!auth.loading) loadAnniversary();
+  }, [id, auth.loading]);
 
   async function loadAnniversary() {
     const { data, error } = await supabase

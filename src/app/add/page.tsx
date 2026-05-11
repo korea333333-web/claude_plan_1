@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
+import { useAuth } from '@/lib/useAuth';
 import type { Category, RepeatType } from '@/lib/anniversary';
 import BottomNav from '@/components/BottomNav';
 import DatePickerSheet from '@/components/DatePickerSheet';
@@ -23,6 +24,7 @@ const repeatTypes: { value: RepeatType; label: string }[] = [
 export default function AddPage() {
   const router = useRouter();
   const supabase = createClient();
+  const auth = useAuth();
 
   const [name, setName] = useState('');
   const [dateType, setDateType] = useState<'lunar' | 'solar'>('lunar');
@@ -55,15 +57,14 @@ export default function AddPage() {
     if (!name) return;
     setSaving(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    if (!auth.userId) {
       alert('로그인이 필요합니다');
       setSaving(false);
       return;
     }
 
     const { error } = await supabase.from('anniversaries').insert({
-      user_id: user.id,
+      user_id: auth.userId,
       name,
       date_type: dateType,
       month,

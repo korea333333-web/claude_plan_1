@@ -1,7 +1,13 @@
 const CACHE_NAME = 'dalsaegim-v1';
 
 // 오프라인 시 캐시할 핵심 리소스
-const PRECACHE_URLS = ['/', '/icons/icon-192.png', '/icons/icon-512.png'];
+const PRECACHE_URLS = [
+  '/',
+  '/icons/app-icon-1.png',
+  '/icons/app-icon-2.png',
+  '/icons/app-icon-3.png',
+  '/icons/app-icon-4.png',
+];
 
 // 설치: 핵심 리소스 미리 캐시
 self.addEventListener('install', (event) => {

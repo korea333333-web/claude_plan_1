@@ -30,7 +30,8 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="manifest" href="/api/manifest" />
+        <link rel="apple-touch-icon" href="/icons/app-icon-3.png" />
       </head>
       <body className="min-h-dvh flex flex-col">
         <ThemeInit />

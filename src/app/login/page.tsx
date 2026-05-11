@@ -6,8 +6,9 @@ export default function LoginPage() {
   const supabase = createClient();
 
   const handleLogin = async (provider: 'kakao' | 'google') => {
-    // Google 세션이 남아있을 수 있으므로 먼저 정리
+    // 기존 세션 정리 (Google + Kakao 모두)
     await supabase.auth.signOut();
+    try { await fetch('/api/auth/kakao/logout', { method: 'POST' }); } catch {}
 
     if (provider === 'kakao') {
       window.location.href = '/api/auth/kakao';
@@ -19,6 +20,9 @@ export default function LoginPage() {
       provider,
       options: {
         redirectTo: `${appUrl}/auth/callback`,
+        queryParams: {
+          prompt: 'select_account',
+        },
       },
     });
   };

@@ -138,11 +138,18 @@ export default function HomePage() {
             </svg>
             <span className="absolute top-1 right-1.5 w-2 h-2 bg-accent-gold rounded-full" />
           </button>
-          <Link href="/settings" className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #c9a96e, #8b6f47)', color: '#0a0d14' }}>
+          <Link href={authUser ? '/settings' : '/login'} className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold overflow-hidden"
+            style={authUser ? { background: 'linear-gradient(135deg, #c9a96e, #8b6f47)', color: '#0a0d14' } : undefined}>
             {authUser?.avatarUrl ? (
               <img src={authUser.avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : firstName || '김'}
+            ) : authUser ? (
+              firstName
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-text-tertiary">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            )}
           </Link>
         </div>
       </div>

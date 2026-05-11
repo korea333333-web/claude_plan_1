@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 import type { Category, RepeatType } from '@/lib/anniversary';
 import BottomNav from '@/components/BottomNav';
@@ -22,7 +22,6 @@ const repeatTypes: { value: RepeatType; label: string }[] = [
 
 export default function AddPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [name, setName] = useState('');
@@ -32,13 +31,14 @@ export default function AddPage() {
 
   // 변환 페이지에서 넘어온 경우 날짜 프리필
   useEffect(() => {
-    const pType = searchParams.get('dateType');
-    const pMonth = searchParams.get('month');
-    const pDay = searchParams.get('day');
+    const params = new URLSearchParams(window.location.search);
+    const pType = params.get('dateType');
+    const pMonth = params.get('month');
+    const pDay = params.get('day');
     if (pType === 'lunar' || pType === 'solar') setDateType(pType);
     if (pMonth) { const m = parseInt(pMonth); if (m >= 1 && m <= 12) setMonth(m); }
     if (pDay) { const d = parseInt(pDay); if (d >= 1 && d <= 31) setDay(d); }
-  }, [searchParams]);
+  }, []);
   const [category, setCategory] = useState<Category>('birthday');
   const [repeatType, setRepeatType] = useState<RepeatType>('yearly');
   const [startYear, setStartYear] = useState('');

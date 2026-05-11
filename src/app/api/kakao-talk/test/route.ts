@@ -50,7 +50,7 @@ export async function POST() {
       date_type: 'solar',
       month: new Date().getMonth() + 1,
       day: new Date().getDate(),
-      category: 'custom',
+      category: 'other',
       repeat_type: 'yearly',
       start_year: null,
       is_shared: false,

@@ -24,6 +24,7 @@ export default function CalendarPage() {
   const [anniversaries, setAnniversaries] = useState<AnniversaryWithDDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -105,8 +106,8 @@ export default function CalendarPage() {
   const isToday = (d: number) =>
     year === today.getFullYear() && month === today.getMonth() && d === today.getDate();
 
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+  const prevMonth = () => { setCurrentDate(new Date(year, month - 1, 1)); setSelectedDay(null); };
+  const nextMonth = () => { setCurrentDate(new Date(year, month + 1, 1)); setSelectedDay(null); };
 
   const titleText = view === 'thisMonth' ? '이번 달' : view === 'upcoming' ? '다가오는 순서' : '월별';
   const subtitleText = view === 'thisMonth'
@@ -197,6 +198,8 @@ export default function CalendarPage() {
           isToday={isToday}
           prevMonth={prevMonth}
           nextMonth={nextMonth}
+          selectedDay={selectedDay}
+          onSelectDay={setSelectedDay}
         />
       )}
       {view === 'upcoming' && <UpcomingView anniversaries={anniversaries} />}
@@ -209,7 +212,7 @@ export default function CalendarPage() {
 
 
 function ThisMonthView({
-  year, month, calendarDays, eventDateSet, monthEvents, isToday, prevMonth, nextMonth,
+  year, month, calendarDays, eventDateSet, monthEvents, isToday, prevMonth, nextMonth, selectedDay, onSelectDay,
 }: {
   year: number;
   month: number;
@@ -219,6 +222,8 @@ function ThisMonthView({
   isToday: (d: number) => boolean;
   prevMonth: () => void;
   nextMonth: () => void;
+  selectedDay: number | null;
+  onSelectDay: (day: number | null) => void;
 }) {
   return (
     <>
@@ -264,12 +269,20 @@ function ThisMonthView({
               } catch { /* skip */ }
             }
 
+            const isSelected = cell.inMonth && selectedDay === cell.day;
+
             return (
-              <div key={i} className={`text-center py-2 relative flex flex-col items-center gap-0.5 ${
-                todayHighlight ? 'bg-accent-gold-dim rounded-lg' : ''
-              }`}>
+              <div
+                key={i}
+                onClick={() => { if (cell.inMonth) onSelectDay(isSelected ? null : cell.day); }}
+                className={`text-center py-2 relative flex flex-col items-center gap-0.5 cursor-pointer transition-colors ${
+                  isSelected ? 'bg-accent-gold/20 rounded-lg' :
+                  todayHighlight ? 'bg-accent-gold-dim rounded-lg' : ''
+                }`}
+              >
                 <span className={`text-[15px] font-medium leading-none ${
                   !cell.inMonth ? 'text-text-tertiary/20' :
+                  isSelected ? 'text-accent-gold font-bold' :
                   todayHighlight ? 'text-accent-gold font-bold' :
                   event?.date_type === 'lunar' ? 'text-accent-gold font-bold' :
                   event?.date_type === 'solar' ? 'text-accent-solar font-bold' :
@@ -294,6 +307,35 @@ function ThisMonthView({
           })}
         </div>
       </div>
+
+      {/* Selected day info */}
+      {selectedDay && (() => {
+        let lunarInfo = '';
+        try {
+          const lunar = solarToLunar(year, month + 1, selectedDay);
+          lunarInfo = `음력 ${lunar.month}월 ${lunar.day}일${lunar.isLeapMonth ? ' (윤달)' : ''}`;
+        } catch { /* skip */ }
+        const dayEvent = eventDateSet.get(selectedDay);
+        const wd = weekdays[new Date(year, month, selectedDay).getDay()];
+
+        return (
+          <div className="mx-5 mt-2 p-4 bg-accent-gold-dim border border-accent-gold/30 rounded-xl">
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-[18px] font-bold text-accent-gold">{month + 1}월 {selectedDay}일</span>
+              <span className="text-[14px] text-text-secondary">{wd}요일</span>
+            </div>
+            {lunarInfo && <p className="text-[14px] text-accent-gold-soft">{lunarInfo}</p>}
+            {dayEvent && (
+              <div className="mt-2 pt-2 border-t border-accent-gold/20">
+                <span className="text-[15px] font-semibold text-text-primary">{dayEvent.name}</span>
+                {dayEvent.count_label && (
+                  <span className="text-[14px] text-accent-gold font-bold ml-2">{dayEvent.count_label}</span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Event list */}
       <div className="px-5 pt-3 border-t-[0.5px] border-border-subtle mt-2">

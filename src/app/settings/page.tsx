@@ -16,6 +16,8 @@ export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [telegramConnected, setTelegramConnected] = useState(false);
+  const [telegramLoading, setTelegramLoading] = useState(false);
   const [builtInHolidays, setBuiltInHolidays] = useState({
     seollal: true,
     chuseok: true,
@@ -29,6 +31,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadUser();
+    checkTelegramStatus();
   }, []);
 
   async function loadUser() {
@@ -60,28 +63,59 @@ export default function SettingsPage() {
     }
   }
 
+  async function checkTelegramStatus() {
+    try {
+      const res = await fetch('/api/telegram/status');
+      const data = await res.json();
+      setTelegramConnected(data.connected);
+    } catch { /* skip */ }
+  }
+
+  async function handleTelegramConnect() {
+    setTelegramLoading(true);
+    try {
+      const res = await fetch('/api/telegram/connect', { method: 'POST' });
+      const data = await res.json();
+      if (data.deepLink) {
+        window.open(data.deepLink, '_blank');
+        setTimeout(() => checkTelegramStatus(), 5000);
+        setTimeout(() => checkTelegramStatus(), 10000);
+        setTimeout(() => checkTelegramStatus(), 15000);
+      }
+    } catch { /* skip */ }
+    setTelegramLoading(false);
+  }
+
   function handleLogout() {
     window.location.href = '/api/auth/logout';
   }
 
   const notificationChannels = [
     {
-      name: '카카오톡',
-      desc: '나에게 보내기로 알림',
-      connected: true,
-      iconType: 'kakao' as const,
-    },
-    {
       name: '텔레그램',
       desc: '봇 알림',
-      connected: true,
+      connected: telegramConnected,
       iconType: 'telegram' as const,
+      onConnect: handleTelegramConnect,
+      loading: telegramLoading,
+    },
+    {
+      name: '카카오톡',
+      desc: '나에게 보내기로 알림',
+      connected: false,
+      iconType: 'kakao' as const,
+      onConnect: undefined,
+      loading: false,
+      comingSoon: true,
     },
     {
       name: '구글 캘린더',
       desc: '일정으로 자동 등록',
       connected: false,
       iconType: 'gcal' as const,
+      onConnect: undefined,
+      loading: false,
+      comingSoon: true,
     },
   ];
 
@@ -167,9 +201,15 @@ export default function SettingsPage() {
                   <span className="w-2 h-2 rounded-full bg-accent-green" />
                   <span className="text-[13px] text-accent-green font-semibold">연결됨</span>
                 </div>
+              ) : ch.comingSoon ? (
+                <span className="text-[13px] text-text-tertiary">준비중</span>
               ) : (
-                <button className="px-3.5 py-2 rounded-full bg-accent-gold-dim border-[0.5px] border-accent-gold text-accent-gold text-[14px] font-semibold">
-                  연결하기
+                <button
+                  onClick={ch.onConnect}
+                  disabled={ch.loading || !user}
+                  className="px-3.5 py-2 rounded-full bg-accent-gold-dim border-[0.5px] border-accent-gold text-accent-gold text-[14px] font-semibold disabled:opacity-40"
+                >
+                  {ch.loading ? '연결중...' : '연결하기'}
                 </button>
               )}
             </div>

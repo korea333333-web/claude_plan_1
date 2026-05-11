@@ -17,57 +17,71 @@ async function ensureWebhook(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const userId = await getAuthenticatedUserId();
+  try {
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const keyLen = process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0;
+    console.log(`[TC0] serviceKey=${hasServiceKey} len=${keyLen}`);
 
-  if (!userId) {
-    return NextResponse.json({ error: '로그인이 필요합니다' }, { status: 401 });
-  }
-
-  console.log('[telegram-connect] userId:', userId);
-  await ensureWebhook(req);
-
-  const service = createServiceClient();
-  const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'dalsaegim_bot';
-
-  const { data: existing } = await service
-    .from('notification_settings')
-    .select('id, telegram_connect_token, telegram_chat_id')
-    .eq('user_id', userId)
-    .single();
-
-  if (existing?.telegram_chat_id) {
-    return NextResponse.json({ alreadyConnected: true });
-  }
-
-  if (existing?.telegram_connect_token) {
-    const deepLink = `https://t.me/${botUsername}?start=${existing.telegram_connect_token}`;
-    return NextResponse.json({ deepLink, token: existing.telegram_connect_token });
-  }
-
-  const token = crypto.randomBytes(16).toString('hex');
-
-  if (existing) {
-    const { error } = await service
-      .from('notification_settings')
-      .update({ telegram_connect_token: token })
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('[telegram-connect] update error:', JSON.stringify(error));
-      return NextResponse.json({ error: '토큰 저장 실패' }, { status: 500 });
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
+      console.log('[TC1] no userId, returning 401');
+      return NextResponse.json({ error: '로그인이 필요합니다' }, { status: 401 });
     }
-  } else {
-    const { error } = await service
+    console.log(`[TC1] uid=${userId.slice(0, 8)}`);
+
+    await ensureWebhook(req);
+
+    const service = createServiceClient();
+    const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'dalsaegim_bot';
+
+    const { data: existing, error: selectErr } = await service
       .from('notification_settings')
-      .insert({ user_id: userId, telegram_connect_token: token });
+      .select('id, telegram_connect_token, telegram_chat_id')
+      .eq('user_id', userId)
+      .single();
 
-    if (error) {
-      console.error('[telegram-connect] insert error:', JSON.stringify(error));
-      return NextResponse.json({ error: '토큰 저장 실패' }, { status: 500 });
+    console.log(`[TC2] select: data=${!!existing} err=${selectErr?.code || 'none'}`);
+
+    if (existing?.telegram_chat_id) {
+      return NextResponse.json({ alreadyConnected: true });
     }
-  }
 
-  const deepLink = `https://t.me/${botUsername}?start=${token}`;
-  console.log('[telegram-connect] token created, deepLink ready');
-  return NextResponse.json({ deepLink, token });
+    if (existing?.telegram_connect_token) {
+      const deepLink = `https://t.me/${botUsername}?start=${existing.telegram_connect_token}`;
+      return NextResponse.json({ deepLink, token: existing.telegram_connect_token });
+    }
+
+    const token = crypto.randomBytes(16).toString('hex');
+
+    if (existing) {
+      const { error } = await service
+        .from('notification_settings')
+        .update({ telegram_connect_token: token })
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error(`[TC3] UPDATE fail: ${error.code} ${error.message}`);
+        return NextResponse.json({ error: '토큰 저장 실패' }, { status: 500 });
+      }
+      console.log('[TC3] UPDATE ok');
+    } else {
+      const { error } = await service
+        .from('notification_settings')
+        .insert({ user_id: userId, telegram_connect_token: token });
+
+      if (error) {
+        console.error(`[TC3] INSERT fail: ${error.code} ${error.message}`);
+        return NextResponse.json({ error: '토큰 저장 실패' }, { status: 500 });
+      }
+      console.log('[TC3] INSERT ok');
+    }
+
+    const deepLink = `https://t.me/${botUsername}?start=${token}`;
+    console.log('[TC4] done');
+    return NextResponse.json({ deepLink, token });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[TC-CRASH] ${msg}`);
+    return NextResponse.json({ error: '서버 오류' }, { status: 500 });
+  }
 }

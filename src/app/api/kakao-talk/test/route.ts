@@ -50,11 +50,13 @@ export async function POST() {
       date_type: 'solar',
       month: new Date().getMonth() + 1,
       day: new Date().getDate(),
-      repeat_cycle: 'yearly',
-      is_lunar_leap: false,
+      category: 'custom',
+      repeat_type: 'yearly',
+      start_year: null,
+      is_shared: false,
+      is_leap_month: false,
       alarms: [],
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     };
 
     const tomorrow = new Date();

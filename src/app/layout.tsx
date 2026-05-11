@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <head>
+      <body className="min-h-dvh flex flex-col">
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             try {
@@ -29,8 +29,8 @@ export default function RootLayout({
             } catch(e){}
           })();
         `}} />
-      </head>
-      <body className="min-h-dvh flex flex-col">{children}</body>
+        {children}
+      </body>
     </html>
   );
 }

@@ -19,6 +19,9 @@ export default function LoginPage() {
       provider,
       options: {
         redirectTo: `${appUrl}/auth/callback`,
+        queryParams: {
+          prompt: 'select_account',
+        },
       },
     });
   };

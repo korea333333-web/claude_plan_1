@@ -421,7 +421,13 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
-          <p className="text-[13px] text-text-tertiary mt-2.5 text-center">탭해서 변경 · 새 기념일에 기본 적용</p>
+          <div className="mt-3 px-3 py-2.5 rounded-lg bg-[rgba(201,169,110,0.06)] border border-[rgba(201,169,110,0.15)]">
+            <p className="text-[13px] text-text-secondary leading-[1.6]">
+              모든 기념일에 위 시점으로 알림이 발송됩니다.
+              <br />
+              <span className="text-accent-gold-soft">기념일 수정 화면</span>에서 개별 변경할 수 있어요.
+            </p>
+          </div>
         </SettingsSection>
 
         {/* Family Group */}

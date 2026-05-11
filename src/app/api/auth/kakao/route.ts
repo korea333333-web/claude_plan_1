@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     response_type: 'code',
     scope: 'profile_nickname,profile_image',
     state,
+    prompt: 'login',
   });
 
   const response = NextResponse.redirect(

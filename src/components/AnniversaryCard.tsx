@@ -1,77 +1,73 @@
+'use client';
+
 import type { AnniversaryWithDDay } from '@/lib/anniversary';
-import { getLunarAsSolarForYear } from '@/lib/lunar';
+import { useRouter } from 'next/navigation';
+
+const CATEGORY_META: Record<string, { emoji: string; label: string }> = {
+  birthday: { emoji: '🎂', label: '생일' },
+  memorial: { emoji: '🕯️', label: '제사' },
+  anniversary: { emoji: '💍', label: '기념일' },
+  holiday: { emoji: '🎑', label: '명절' },
+  other: { emoji: '📌', label: '기타' },
+};
 
 interface Props {
   anniversary: AnniversaryWithDDay;
 }
 
 export default function AnniversaryCard({ anniversary }: Props) {
+  const router = useRouter();
   const isLunar = anniversary.date_type === 'lunar';
-  const ddayText = anniversary.dday === 0 ? 'D-Day' : `D-${anniversary.dday}`;
-
+  const meta = CATEGORY_META[anniversary.category] || CATEGORY_META.other;
   const solarDate = anniversary.next_solar_date;
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
   const weekday = weekdays[solarDate.getDay()];
+  const isDemo = anniversary.id.startsWith('demo-');
 
-  let lunarDisplay = '';
-  if (isLunar) {
-    lunarDisplay = `음력 ${anniversary.month}월 ${anniversary.day}일`;
-  }
-
-  const solarDisplay = `${isLunar ? '양력 ' : ''}${solarDate.getMonth() + 1}월 ${solarDate.getDate()}일 (${weekday})`;
+  const ddayText = anniversary.dday === 0 ? 'D-Day' : `D-${anniversary.dday}`;
+  const ddayColor = anniversary.dday === 0
+    ? 'text-accent-red'
+    : anniversary.dday <= 7
+      ? 'text-accent-gold'
+      : 'text-accent-gold/60';
 
   return (
-    <div className="relative bg-bg-card border border-border-card rounded-[20px] p-5 overflow-hidden">
-      {/* Left accent bar */}
-      <div
-        className={`absolute left-0 top-0 bottom-0 w-[3px] ${
-          isLunar ? 'bg-accent-lunar' : 'bg-accent-solar'
-        }`}
-      />
+    <div
+      onClick={() => !isDemo && router.push(`/edit/${anniversary.id}`)}
+      className={`relative bg-bg-card border border-border-card rounded-[20px] p-5 overflow-hidden
+        transition-transform duration-150 active:scale-[0.97]
+        ${!isDemo ? 'cursor-pointer' : ''}`}
+    >
+      <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${isLunar ? 'bg-accent-lunar' : 'bg-accent-solar'}`} />
 
-      <div className="flex justify-between items-start mb-2.5">
-        <span
-          className={`text-[10px] font-semibold tracking-[1.5px] uppercase px-2 py-0.5 rounded-md ${
-            isLunar
-              ? 'text-accent-lunar bg-accent-lunar-dim'
-              : 'text-accent-solar bg-accent-solar-dim'
-          }`}
-        >
-          {isLunar ? '음력' : '양력'}
-        </span>
-        <span
-          className={`text-[22px] font-bold tracking-tight ${
-            anniversary.dday === 0 ? 'text-accent-red' : 'text-accent-gold'
-          }`}
-        >
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className={`text-[10px] font-semibold tracking-[1px] px-2 py-0.5 rounded-md ${
+            isLunar ? 'text-accent-lunar bg-accent-lunar-dim' : 'text-accent-solar bg-accent-solar-dim'
+          }`}>
+            {isLunar ? '🌙 음력' : '☀️ 양력'}
+          </span>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-md text-text-tertiary bg-bg-input">
+            {meta.label}
+          </span>
+        </div>
+        <span className={`text-xl font-bold tracking-tight shrink-0 ml-2 ${ddayColor}`}>
           {ddayText}
         </span>
       </div>
 
-      <h3 className="text-lg font-semibold mb-1.5">{anniversary.name}</h3>
+      <h3 className="text-[17px] font-semibold mb-1">
+        {meta.emoji} {anniversary.name}
+      </h3>
 
-      <div className="flex items-center gap-2 text-[13px] text-text-secondary">
-        {isLunar && (
-          <>
-            <span>{lunarDisplay}</span>
-            <span className="text-text-tertiary text-[11px]">→</span>
-          </>
-        )}
-        <span>{solarDisplay}</span>
-      </div>
+      <p className="text-[13px] text-text-secondary">
+        {isLunar && <>{`음력 ${anniversary.month}/${anniversary.day}`} <span className="text-text-tertiary mx-0.5">→</span> </>}
+        {`양력 ${solarDate.getMonth() + 1}/${solarDate.getDate()} (${weekday})`}
+      </p>
 
       {anniversary.count_label && (
-        <div className="inline-flex items-center gap-1 mt-2.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-accent-gold-dim text-accent-gold">
-          {anniversary.category === 'birthday' ? (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-            </svg>
-          ) : (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z" />
-            </svg>
-          )}
-          {anniversary.count_label}
+        <div className="mt-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-accent-gold-dim text-accent-gold">
+          ✨ {anniversary.count_label}
         </div>
       )}
     </div>

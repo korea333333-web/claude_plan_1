@@ -63,7 +63,9 @@ export default function SettingsPage() {
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut({ scope: 'global' });
+    try {
+      await supabase.auth.signOut();
+    } catch {}
     if (user?.provider === 'kakao') {
       window.location.href = '/api/auth/kakao/logout';
     } else {

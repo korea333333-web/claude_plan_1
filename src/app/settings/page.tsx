@@ -125,6 +125,24 @@ export default function SettingsPage() {
     setGcalLoading(false);
   }
 
+  async function handleDisconnect(channel: 'telegram' | 'gcal') {
+    if (!confirm(`${channel === 'telegram' ? '텔레그램' : '구글 캘린더'} 연결을 해제할까요?`)) return;
+    try {
+      const res = await fetch(`/api/${channel}/disconnect`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        if (channel === 'telegram') {
+          setTelegramConnected(false);
+          setTelegramDeepLink(null);
+        } else {
+          setGcalConnected(false);
+          setGcalEmail(null);
+          setGcalGuide(false);
+        }
+      }
+    } catch { /* skip */ }
+  }
+
   async function handleTelegramConnect() {
     if (telegramLoading) return;
     setTelegramLoading(true);
@@ -174,6 +192,7 @@ export default function SettingsPage() {
       desc: '봇 알림',
       connected: telegramConnected,
       iconType: 'telegram' as const,
+      channelKey: 'telegram' as const,
       onConnect: handleTelegramConnect,
       loading: telegramLoading,
     },
@@ -182,6 +201,7 @@ export default function SettingsPage() {
       desc: '나에게 보내기로 알림',
       connected: false,
       iconType: 'kakao' as const,
+      channelKey: 'kakao' as const,
       onConnect: undefined,
       loading: false,
       comingSoon: true,
@@ -191,6 +211,7 @@ export default function SettingsPage() {
       desc: gcalEmail ? gcalEmail : '일정으로 자동 등록',
       connected: gcalConnected,
       iconType: 'gcal' as const,
+      channelKey: 'gcal' as const,
       onConnect: handleGcalConnect,
       loading: gcalLoading,
     },
@@ -274,10 +295,14 @@ export default function SettingsPage() {
                 <div className="text-[13px] text-text-secondary mt-0.5">{ch.desc}</div>
               </div>
               {ch.connected ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-accent-green" />
-                  <span className="text-[13px] text-accent-green font-semibold">연결됨</span>
-                </div>
+                <button
+                  onClick={() => handleDisconnect(ch.channelKey as 'telegram' | 'gcal')}
+                  className="flex items-center gap-1.5 group cursor-pointer"
+                >
+                  <span className="w-2 h-2 rounded-full bg-accent-green group-hover:bg-red-400" />
+                  <span className="text-[13px] text-accent-green font-semibold group-hover:text-red-400">연결됨</span>
+                  <span className="text-[11px] text-text-tertiary hidden group-hover:inline">해제</span>
+                </button>
               ) : ch.comingSoon ? (
                 <span className="text-[13px] text-text-tertiary">준비중</span>
               ) : (

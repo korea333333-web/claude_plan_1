@@ -5,6 +5,7 @@ import { solarToLunar } from '@/lib/lunar';
 import { enrichAnniversary, sortByDDay, groupByMonth, DEFAULT_ANNIVERSARIES } from '@/lib/anniversary';
 import { createClient } from '@/lib/supabase';
 import type { Anniversary, AnniversaryWithDDay } from '@/lib/anniversary';
+import { useRouter } from 'next/navigation';
 import BottomNav from '@/components/BottomNav';
 
 type ViewMode = 'thisMonth' | 'upcoming' | 'byMonth';
@@ -225,6 +226,8 @@ function ThisMonthView({
   selectedDay: number | null;
   onSelectDay: (day: number | null) => void;
 }) {
+  const router = useRouter();
+
   return (
     <>
       {/* Month nav */}
@@ -325,14 +328,20 @@ function ThisMonthView({
               <span className="text-[14px] text-text-secondary">{wd}요일</span>
             </div>
             {lunarInfo && <p className="text-[14px] text-accent-gold-soft">{lunarInfo}</p>}
-            {dayEvent && (
-              <div className="mt-2 pt-2 border-t border-accent-gold/20">
-                <span className="text-[15px] font-semibold text-text-primary">{dayEvent.name}</span>
-                {dayEvent.count_label && (
-                  <span className="text-[14px] text-accent-gold font-bold ml-2">{dayEvent.count_label}</span>
-                )}
-              </div>
-            )}
+            {dayEvent && (() => {
+              const isDemo = dayEvent.id.startsWith('demo-');
+              return (
+                <div
+                  onClick={() => !isDemo && router.push(`/edit/${dayEvent.id}`)}
+                  className={`mt-2 pt-2 border-t border-accent-gold/20 transition-opacity active:opacity-70 ${!isDemo ? 'cursor-pointer' : ''}`}
+                >
+                  <span className="text-[15px] font-semibold text-text-primary">{dayEvent.name}</span>
+                  {dayEvent.count_label && (
+                    <span className="text-[14px] text-accent-gold font-bold ml-2">{dayEvent.count_label}</span>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         );
       })()}
@@ -349,9 +358,14 @@ function ThisMonthView({
             const wd = weekdays[nd.getDay()];
             const isLunar = ann.date_type === 'lunar';
             const isClose = ann.dday <= 14;
+            const isDemo = ann.id.startsWith('demo-');
 
             return (
-              <div key={ann.id} className="flex gap-3 py-3.5 border-b-[0.5px] border-border-subtle last:border-b-0 items-center">
+              <div
+                key={ann.id}
+                onClick={() => !isDemo && router.push(`/edit/${ann.id}`)}
+                className={`flex gap-3 py-3.5 border-b-[0.5px] border-border-subtle last:border-b-0 items-center transition-opacity active:opacity-70 ${!isDemo ? 'cursor-pointer' : ''}`}
+              >
                 <div className="text-center shrink-0 w-[40px]">
                   <div className="text-[13px] text-text-tertiary leading-none mb-1">{wd}</div>
                   <div className={`text-[28px] font-bold tracking-[-1px] leading-none ${
@@ -399,6 +413,8 @@ function ThisMonthView({
 
 
 function UpcomingView({ anniversaries }: { anniversaries: AnniversaryWithDDay[] }) {
+  const router = useRouter();
+
   return (
     <div className="px-5 pt-2">
       {anniversaries.length === 0 ? (
@@ -411,9 +427,14 @@ function UpcomingView({ anniversaries }: { anniversaries: AnniversaryWithDDay[] 
           const wd = weekdays[nd.getDay()];
           const isLunar = ann.date_type === 'lunar';
           const isClose = ann.dday <= 14;
+          const isDemo = ann.id.startsWith('demo-');
 
           return (
-            <div key={ann.id} className="flex gap-3 py-3 border-b-[0.5px] border-border-subtle last:border-b-0 items-center">
+            <div
+              key={ann.id}
+              onClick={() => !isDemo && router.push(`/edit/${ann.id}`)}
+              className={`flex gap-3 py-3 border-b-[0.5px] border-border-subtle last:border-b-0 items-center transition-opacity active:opacity-70 ${!isDemo ? 'cursor-pointer' : ''}`}
+            >
               <div className={`w-[3px] rounded-sm shrink-0 ${
                 isLunar ? 'bg-accent-gold' : 'bg-accent-solar'
               }`} style={{ height: '36px' }} />
@@ -458,6 +479,7 @@ function UpcomingView({ anniversaries }: { anniversaries: AnniversaryWithDDay[] 
 
 
 function ByMonthView({ grouped }: { grouped: Map<string, AnniversaryWithDDay[]> }) {
+  const router = useRouter();
   const today = new Date();
   const currentMonthKey = `${today.getFullYear()}년 ${today.getMonth() + 1}월`;
 
@@ -496,11 +518,16 @@ function ByMonthView({ grouped }: { grouped: Map<string, AnniversaryWithDDay[]> 
                   const nd = ann.next_solar_date;
                   const isLunar = ann.date_type === 'lunar';
                   const isClose = ann.dday <= 14;
+                  const isDemo = ann.id.startsWith('demo-');
 
                   return (
-                    <div key={ann.id} className={`flex gap-3 py-2.5 items-center ${
-                      i < events.length - 1 ? 'border-b-[0.5px] border-border-subtle/30' : ''
-                    }`}>
+                    <div
+                      key={ann.id}
+                      onClick={() => !isDemo && router.push(`/edit/${ann.id}`)}
+                      className={`flex gap-3 py-2.5 items-center transition-opacity active:opacity-70 ${
+                        i < events.length - 1 ? 'border-b-[0.5px] border-border-subtle/30' : ''
+                      } ${!isDemo ? 'cursor-pointer' : ''}`}
+                    >
                       <div className="text-[14px] text-text-tertiary w-6 shrink-0 text-center font-medium">
                         {nd.getDate()}
                       </div>

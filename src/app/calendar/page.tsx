@@ -237,34 +237,55 @@ function ThisMonthView({
         </button>
       </div>
 
-      {/* Mini calendar grid */}
-      <div className="px-5 pt-1 pb-2">
-        <div className="grid grid-cols-7 mb-2">
+      {/* Calendar grid with lunar dates */}
+      <div className="px-3 pt-1 pb-2">
+        <div className="grid grid-cols-7 mb-1">
           {weekdays.map((wd, i) => (
-            <div key={wd} className={`text-center text-[13px] py-1 font-medium ${i === 0 ? 'text-accent-red/70' : 'text-text-tertiary'}`}>
+            <div key={wd} className={`text-center text-[13px] py-1.5 font-medium ${i === 0 ? 'text-accent-red/70' : 'text-text-tertiary'}`}>
               {wd}
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-[2px]">
+        <div className="grid grid-cols-7">
           {calendarDays.map((cell, i) => {
             const isSunday = (i % 7) === 0;
             const event = cell.inMonth ? eventDateSet.get(cell.day) : undefined;
             const todayHighlight = cell.inMonth && isToday(cell.day);
 
+            let lunarStr = '';
+            if (cell.inMonth) {
+              try {
+                const lunar = solarToLunar(year, month + 1, cell.day);
+                if (lunar.day === 1) {
+                  lunarStr = `${lunar.month}월`;
+                } else {
+                  lunarStr = `${lunar.day}`;
+                }
+              } catch { /* skip */ }
+            }
+
             return (
-              <div key={i} className="text-center py-[5px] relative">
-                <span className={`text-[14px] inline-block leading-none ${
-                  !cell.inMonth ? 'text-text-tertiary/25' :
-                  todayHighlight ? 'text-accent-gold font-bold bg-accent-gold-dim rounded-md px-1.5 py-1' :
+              <div key={i} className={`text-center py-2 relative flex flex-col items-center gap-0.5 ${
+                todayHighlight ? 'bg-accent-gold-dim rounded-lg' : ''
+              }`}>
+                <span className={`text-[15px] font-medium leading-none ${
+                  !cell.inMonth ? 'text-text-tertiary/20' :
+                  todayHighlight ? 'text-accent-gold font-bold' :
                   event?.date_type === 'lunar' ? 'text-accent-gold font-bold' :
                   event?.date_type === 'solar' ? 'text-accent-solar font-bold' :
-                  isSunday ? 'text-accent-red/70' : 'text-text-secondary'
+                  isSunday ? 'text-accent-red/70' : 'text-text-primary/80'
                 }`}>
                   {cell.day}
                 </span>
+                <span className={`text-[10px] leading-none ${
+                  !cell.inMonth ? 'text-text-tertiary/15' :
+                  lunarStr.includes('월') ? 'text-accent-gold/70 font-semibold' :
+                  'text-text-tertiary/60'
+                }`}>
+                  {cell.inMonth ? lunarStr : ''}
+                </span>
                 {event && cell.inMonth && (
-                  <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full ${
+                  <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full ${
                     event.date_type === 'lunar' ? 'bg-accent-gold' : 'bg-accent-solar'
                   }`} />
                 )}

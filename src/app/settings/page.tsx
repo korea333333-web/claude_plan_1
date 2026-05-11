@@ -323,16 +323,32 @@ export default function SettingsPage() {
           )}
           {gcalGuide && !gcalConnected && (
             <div className="mt-2 px-3.5 py-3 rounded-lg bg-[rgba(66,133,244,0.08)] border border-[rgba(66,133,244,0.2)]">
-              <p className="text-[14px] font-semibold text-[#4285f4] mb-2">구글 캘린더 연결 안내</p>
-              <div className="text-[13px] text-text-secondary space-y-1.5">
-                <p>1. 아래 버튼을 누르면 구글 로그인 화면이 열려요</p>
-                <p>2. <span className="text-text-primary font-medium">{'"'}Google에서 확인하지 않은 앱{'"'}</span> 경고가 나오면 <span className="text-text-primary font-medium">{'"'}계속{'"'}</span>을 눌러주세요</p>
-                <p>3. 캘린더 권한 <span className="text-text-primary font-medium">{'"'}허용{'"'}</span>을 누르면 연결 완료!</p>
+              <p className="text-[15px] font-bold text-[#4285f4] mb-3">반드시 확인하고 연결해주세요</p>
+              <div className="text-[13px] text-text-secondary space-y-3">
+                <div className="flex gap-2">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-[#4285f4] text-white text-[11px] font-bold flex items-center justify-center">1</span>
+                  <p>구글 로그인 화면이 나오면 <span className="text-text-primary font-semibold">본인 계정을 선택</span>하거나 로그인해주세요</p>
+                </div>
+                <div className="flex gap-2">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-[#4285f4] text-white text-[11px] font-bold flex items-center justify-center">2</span>
+                  <div>
+                    <p className="text-[14px] text-text-primary font-semibold mb-0.5">{'"'}Google에서 확인하지 않은 앱{'"'}</p>
+                    <p>이 화면이 나오면 왼쪽 하단의 <span className="text-text-primary font-semibold">{'"'}계속{'"'}</span>을 눌러주세요</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-[#4285f4] text-white text-[11px] font-bold flex items-center justify-center">3</span>
+                  <p>액세스 허용 화면에서 <span className="text-text-primary font-semibold">{'"'}계속{'"'}</span>을 눌러주세요</p>
+                </div>
+                <div className="flex gap-2">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-[#4285f4] text-white text-[11px] font-bold flex items-center justify-center">4</span>
+                  <p>앱을 신뢰할 수 있는지 확인 화면에서 <span className="text-text-primary font-semibold">{'"'}계속{'"'}</span>을 누르면 연결 완료!</p>
+                </div>
               </div>
               <button
                 onClick={handleGcalConnect}
                 disabled={gcalLoading}
-                className="mt-3 w-full py-2.5 rounded-full bg-[#4285f4] text-white text-[14px] font-semibold disabled:opacity-50"
+                className="mt-3.5 w-full py-2.5 rounded-full bg-[#4285f4] text-white text-[14px] font-semibold disabled:opacity-50"
               >
                 {gcalLoading ? '연결중...' : '구글 로그인으로 이동'}
               </button>

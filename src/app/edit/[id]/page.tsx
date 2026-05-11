@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 import type { Category, RepeatType } from '@/lib/anniversary';
 import BottomNav from '@/components/BottomNav';
-import WheelPicker from '@/components/WheelPicker';
+import DatePickerSheet from '@/components/DatePickerSheet';
 
 const categories: { value: Category; label: string }[] = [
   { value: 'birthday', label: '생일' },
@@ -32,8 +32,6 @@ export default function EditPage() {
   const [dateType, setDateType] = useState<'lunar' | 'solar'>('lunar');
   const [month, setMonth] = useState(1);
   const [day, setDay] = useState(1);
-  const monthItems = Array.from({ length: 12 }, (_, i) => i + 1);
-  const dayItems = Array.from({ length: 31 }, (_, i) => i + 1);
   const [category, setCategory] = useState<Category>('birthday');
   const [repeatType, setRepeatType] = useState<RepeatType>('yearly');
   const [startYear, setStartYear] = useState('');
@@ -173,10 +171,7 @@ export default function EditPage() {
 
         {/* Date */}
         <FormField label="날짜">
-          <div className="flex gap-3">
-            <WheelPicker items={monthItems} value={month} onChange={setMonth} suffix="월" />
-            <WheelPicker items={dayItems} value={day} onChange={setDay} suffix="일" />
-          </div>
+          <DatePickerSheet month={month} day={day} onConfirm={(m, d) => { setMonth(m); setDay(d); }} />
         </FormField>
 
         {/* Category */}

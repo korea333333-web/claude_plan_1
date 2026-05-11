@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
-  const origin = new URL(request.url).origin;
+  const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
   const redirectUri = `${origin}/api/auth/kakao/callback`;
 
   const params = new URLSearchParams({

@@ -39,8 +39,8 @@ export default function SettingsPage() {
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push('/login');
+    await supabase.auth.signOut({ scope: 'global' });
+    window.location.href = '/login';
   }
 
   const notificationChannels = [

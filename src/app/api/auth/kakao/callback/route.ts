@@ -12,7 +12,8 @@ function derivePassword(kakaoId: string | number): string {
 }
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
   const code = searchParams.get('code');
   const error = searchParams.get('error');
 

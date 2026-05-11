@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import ThemeInit from "@/components/ThemeInit";
 
 export const metadata: Metadata = {
   title: "달새김 — 소중한 날을 달에 새기다",
@@ -21,14 +22,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className="min-h-dvh flex flex-col">
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function(){
-            try {
-              var t = localStorage.getItem('dalsaegim-theme');
-              if (t === 'light') document.documentElement.setAttribute('data-theme','light');
-            } catch(e){}
-          })();
-        `}} />
+        <ThemeInit />
         {children}
       </body>
     </html>

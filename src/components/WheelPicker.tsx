@@ -9,7 +9,7 @@ interface WheelPickerProps {
   suffix?: string;
 }
 
-const ITEM_H = 40;
+const ITEM_H = 44;
 const VISIBLE = 5;
 const PAD = Math.floor(VISIBLE / 2) * ITEM_H;
 
@@ -66,24 +66,27 @@ export default function WheelPicker({ items, value, onChange, suffix = '' }: Whe
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl bg-bg-card-strong border border-border-strong flex-1"
+      className="relative overflow-hidden rounded-2xl bg-bg-picker flex-1"
       style={{ height: ITEM_H * VISIBLE }}
       onWheel={handleWheel}
     >
+      {/* Selection highlight band */}
       <div
-        className="absolute inset-x-3 z-10 border-y border-accent-gold/20 pointer-events-none"
+        className="absolute inset-x-0 z-10 bg-bg-picker-highlight pointer-events-none"
         style={{ top: PAD, height: ITEM_H }}
-      />
+      >
+        <div className="absolute inset-x-4 top-0 h-[1.5px] bg-accent-gold/40 rounded-full" />
+        <div className="absolute inset-x-4 bottom-0 h-[1.5px] bg-accent-gold/40 rounded-full" />
+      </div>
 
       <div
         ref={scrollRef}
-        className="h-full overflow-y-auto"
+        className="h-full overflow-y-auto no-scrollbar"
         style={{
           scrollSnapType: 'y mandatory',
           WebkitOverflowScrolling: 'touch',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-          scrollbarWidth: 'none',
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
         }}
         onScroll={handleScroll}
       >
@@ -99,11 +102,12 @@ export default function WheelPicker({ items, value, onChange, suffix = '' }: Whe
               <span
                 className={`transition-all duration-100 ${
                   dist === 0
-                    ? 'text-[22px] font-bold text-accent-gold'
+                    ? 'text-[24px] font-bold text-accent-gold'
                     : dist === 1
-                      ? 'text-[16px] font-medium text-text-secondary'
-                      : 'text-[13px] text-text-tertiary'
+                      ? 'text-[17px] font-medium text-text-secondary'
+                      : 'text-[14px] text-text-tertiary'
                 }`}
+                style={dist >= 2 ? { opacity: 0.5 } : undefined}
               >
                 {item}{suffix}
               </span>

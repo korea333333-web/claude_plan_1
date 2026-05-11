@@ -21,6 +21,9 @@
   --color-border-subtle: rgba(240,236,228,0.06);
   --color-border-card: rgba(240,236,228,0.08);
   --color-border-strong: rgba(240,236,228,0.15);
+  --color-bg-sheet: #181b24;
+  --color-bg-picker: #1e2130;
+  --color-bg-picker-highlight: rgba(201,169,110,0.15);
   --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -68,6 +71,9 @@ body {
   --color-border-subtle: rgba(60,40,20,0.06);
   --color-border-card: rgba(60,40,20,0.08);
   --color-border-strong: rgba(60,40,20,0.18);
+  --color-bg-sheet: #ede8de;
+  --color-bg-picker: #e5dfd4;
+  --color-bg-picker-highlight: rgba(139,111,71,0.12);
 }
 
 @keyframes slide-up {
@@ -77,4 +83,13 @@ body {
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -48,28 +48,38 @@ export default function DatePickerSheet({ month, day, onConfirm }: DatePickerShe
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setOpen(false)}>
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/60" />
           <div
-            className="relative w-full max-w-[500px] bg-bg-card-strong rounded-t-2xl pb-[env(safe-area-inset-bottom,16px)] animate-slide-up"
+            className="relative w-full max-w-[500px] bg-bg-sheet rounded-t-3xl pb-[env(safe-area-inset-bottom,20px)] animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 pt-4 pb-2">
+            {/* Handle bar */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-text-tertiary/40" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-2 pb-4">
               <button
                 onClick={() => setOpen(false)}
-                className="text-text-secondary text-[16px]"
+                className="text-text-secondary text-[16px] py-1 px-1"
               >
                 취소
               </button>
-              <span className="text-[16px] font-bold text-text-primary">날짜 선택</span>
+              <span className="text-[17px] font-bold text-text-primary">날짜 선택</span>
               <button
                 onClick={handleConfirm}
-                className="text-accent-gold text-[16px] font-bold"
+                className="text-accent-gold text-[16px] font-bold py-1 px-1"
               >
                 확인
               </button>
             </div>
 
-            <div className="flex gap-3 px-6 py-4">
+            {/* Divider */}
+            <div className="mx-6 h-px bg-border-strong/50" />
+
+            {/* Pickers */}
+            <div className="flex gap-4 px-6 py-6">
               <WheelPicker items={months} value={tempMonth} onChange={setTempMonth} suffix="월" />
               <WheelPicker items={days} value={tempDay} onChange={setTempDay} suffix="일" />
             </div>

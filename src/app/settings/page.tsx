@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import { HOLIDAY_PRESETS, SOLAR_TERM_PRESETS, SOLAR_TERM_SEASONS, type PresetItem } from '@/lib/presets';
 
 interface UserProfile {
   name: string;
@@ -29,22 +30,16 @@ export default function SettingsPage() {
   const [kakaoLoading, setKakaoLoading] = useState(false);
   const [kakaoError, setKakaoError] = useState<string | null>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [builtInHolidays, setBuiltInHolidays] = useState({
-    seollal: true,
-    chuseok: true,
-    buddha: true,
-    daeboreum: false,
-    dano: false,
-    hansik: false,
-    dongji: false,
-    chilseok: false,
-  });
+  const [addedPresets, setAddedPresets] = useState<Set<string>>(new Set());
+  const [presetsLoading, setPresetsLoading] = useState(true);
+  const [showSolarTerms, setShowSolarTerms] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('dalsaegim-theme') as 'dark' | 'light' | null;
     if (saved) setTheme(saved);
 
     loadUser();
+    loadPresets();
     checkTelegramStatus();
     checkGcalStatus();
     checkKakaoStatus();
@@ -241,6 +236,81 @@ export default function SettingsPage() {
     }
   }
 
+  async function loadPresets() {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) { setPresetsLoading(false); return; }
+    const { data } = await supabase
+      .from('anniversaries')
+      .select('name, date_type, month, day')
+      .eq('user_id', authUser.id);
+    if (data) {
+      const all = [...HOLIDAY_PRESETS, ...SOLAR_TERM_PRESETS];
+      const added = new Set<string>();
+      all.forEach(p => {
+        if (data.some(d => d.name === p.name && d.date_type === p.date_type && d.month === p.month && d.day === p.day)) {
+          added.add(p.key);
+        }
+      });
+      setAddedPresets(added);
+    }
+    setPresetsLoading(false);
+  }
+
+  async function togglePreset(preset: PresetItem) {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return;
+    const isAdded = addedPresets.has(preset.key);
+    if (isAdded) {
+      await supabase.from('anniversaries').delete()
+        .eq('user_id', authUser.id).eq('name', preset.name)
+        .eq('date_type', preset.date_type).eq('month', preset.month).eq('day', preset.day);
+      setAddedPresets(prev => { const n = new Set(prev); n.delete(preset.key); return n; });
+    } else {
+      await supabase.from('anniversaries').insert({
+        user_id: authUser.id, name: preset.name, date_type: preset.date_type,
+        month: preset.month, day: preset.day, category: preset.category,
+        repeat_type: 'yearly', start_year: null, is_shared: false, is_leap_month: false,
+        alarms: [
+          { enabled: true, daysBefore: 7, hour: 9, minute: 0 },
+          { enabled: true, daysBefore: 3, hour: 9, minute: 0 },
+          { enabled: true, daysBefore: 0, hour: 9, minute: 0 },
+        ],
+      });
+      setAddedPresets(prev => new Set([...prev, preset.key]));
+    }
+  }
+
+  async function addAllPresets(presets: PresetItem[]) {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return;
+    const toAdd = presets.filter(p => !addedPresets.has(p.key));
+    if (toAdd.length === 0) return;
+    await supabase.from('anniversaries').insert(toAdd.map(p => ({
+      user_id: authUser.id, name: p.name, date_type: p.date_type,
+      month: p.month, day: p.day, category: p.category,
+      repeat_type: 'yearly', start_year: null, is_shared: false, is_leap_month: false,
+      alarms: [
+        { enabled: true, daysBefore: 7, hour: 9, minute: 0 },
+        { enabled: true, daysBefore: 3, hour: 9, minute: 0 },
+        { enabled: true, daysBefore: 0, hour: 9, minute: 0 },
+      ],
+    })));
+    setAddedPresets(prev => { const n = new Set(prev); toAdd.forEach(p => n.add(p.key)); return n; });
+  }
+
+  async function removeAllPresets(presets: PresetItem[]) {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return;
+    const toRemove = presets.filter(p => addedPresets.has(p.key));
+    if (toRemove.length === 0) return;
+    for (const p of toRemove) {
+      await supabase.from('anniversaries').delete()
+        .eq('user_id', authUser.id).eq('name', p.name)
+        .eq('date_type', p.date_type).eq('month', p.month).eq('day', p.day);
+    }
+    setAddedPresets(prev => { const n = new Set(prev); toRemove.forEach(p => n.delete(p.key)); return n; });
+  }
+
   function handleLogout() {
     window.location.href = '/api/auth/logout';
   }
@@ -281,16 +351,8 @@ export default function SettingsPage() {
     { level: '3차', when: '당일' },
   ];
 
-  const holidays: { key: keyof typeof builtInHolidays; name: string }[] = [
-    { key: 'seollal', name: '설날' },
-    { key: 'chuseok', name: '추석' },
-    { key: 'buddha', name: '석가탄신일' },
-    { key: 'daeboreum', name: '정월대보름' },
-    { key: 'dano', name: '단오' },
-    { key: 'hansik', name: '한식' },
-    { key: 'dongji', name: '동지' },
-    { key: 'chilseok', name: '칠석' },
-  ];
+  const holidayCount = HOLIDAY_PRESETS.filter(p => addedPresets.has(p.key)).length;
+  const solarTermCount = SOLAR_TERM_PRESETS.filter(p => addedPresets.has(p.key)).length;
 
   const initials = user?.name?.charAt(0) || '?';
 
@@ -474,26 +536,114 @@ export default function SettingsPage() {
         </SettingsSection>
 
         {/* Built-in Holidays */}
-        <SettingsSection label="기본 내장 명절">
+        <SettingsSection label={`기본 내장 명절 (${holidayCount}/${HOLIDAY_PRESETS.length})`}>
           <div className="flex flex-wrap gap-2">
-            {holidays.map((h) => (
+            {HOLIDAY_PRESETS.map((p) => (
               <button
-                key={h.key}
-                onClick={() => setBuiltInHolidays(prev => ({ ...prev, [h.key]: !prev[h.key] }))}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-[14px] font-semibold border-[0.5px] transition-all ${
-                  builtInHolidays[h.key]
+                key={p.key}
+                onClick={() => togglePreset(p)}
+                disabled={presetsLoading || !user}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[14px] font-semibold border-[0.5px] transition-all disabled:opacity-40 ${
+                  addedPresets.has(p.key)
                     ? 'bg-accent-gold-dim border-accent-gold text-accent-gold'
                     : 'bg-bg-card border-border-strong text-text-secondary font-medium'
                 }`}
               >
-                {h.name}
-                {builtInHolidays[h.key] && (
+                {p.name}
+                <span className="text-[11px] opacity-60">{p.date_type === 'lunar' ? `${p.month}.${p.day}` : `${p.month}/${p.day}`}</span>
+                {addedPresets.has(p.key) && (
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 )}
               </button>
             ))}
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => addAllPresets(HOLIDAY_PRESETS)}
+              disabled={presetsLoading || !user || holidayCount === HOLIDAY_PRESETS.length}
+              className="flex-1 py-2.5 rounded-xl bg-accent-gold-dim border-[0.5px] border-accent-gold text-accent-gold text-[13px] font-semibold disabled:opacity-30 transition-opacity"
+            >
+              전체 추가
+            </button>
+            <button
+              onClick={() => removeAllPresets(HOLIDAY_PRESETS)}
+              disabled={presetsLoading || !user || holidayCount === 0}
+              className="flex-1 py-2.5 rounded-xl bg-bg-card border-[0.5px] border-border-strong text-text-secondary text-[13px] font-medium disabled:opacity-30 transition-opacity"
+            >
+              전체 삭제
+            </button>
+          </div>
+        </SettingsSection>
+
+        {/* 24 Solar Terms */}
+        <SettingsSection label={`24절기 (${solarTermCount}/${SOLAR_TERM_PRESETS.length})`}>
+          <button
+            onClick={() => setShowSolarTerms(!showSolarTerms)}
+            className="w-full flex items-center justify-between py-3 px-4 bg-bg-card border border-border-strong rounded-xl mb-3"
+          >
+            <span className="text-[15px] text-text-primary font-medium">
+              {showSolarTerms ? '접기' : '펼쳐서 보기'}
+            </span>
+            <svg
+              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+              className={`text-text-tertiary transition-transform ${showSolarTerms ? 'rotate-180' : ''}`}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {showSolarTerms && (
+            <div className="space-y-4">
+              {SOLAR_TERM_SEASONS.map((season) => (
+                <div key={season.label}>
+                  <div className="text-[12px] text-text-tertiary tracking-[1px] mb-2">{season.label}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {season.keys.map((key) => {
+                      const p = SOLAR_TERM_PRESETS.find(t => t.key === key)!;
+                      return (
+                        <button
+                          key={p.key}
+                          onClick={() => togglePreset(p)}
+                          disabled={presetsLoading || !user}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border-[0.5px] transition-all disabled:opacity-40 ${
+                            addedPresets.has(p.key)
+                              ? 'bg-accent-gold-dim border-accent-gold text-accent-gold'
+                              : 'bg-bg-card border-border-strong text-text-secondary font-medium'
+                          }`}
+                        >
+                          {p.name}
+                          <span className="text-[10px] opacity-50">{p.month}/{p.day}</span>
+                          {addedPresets.has(p.key) && (
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => addAllPresets(SOLAR_TERM_PRESETS)}
+              disabled={presetsLoading || !user || solarTermCount === SOLAR_TERM_PRESETS.length}
+              className="flex-1 py-2.5 rounded-xl bg-accent-gold-dim border-[0.5px] border-accent-gold text-accent-gold text-[13px] font-semibold disabled:opacity-30 transition-opacity"
+            >
+              전체 추가
+            </button>
+            <button
+              onClick={() => removeAllPresets(SOLAR_TERM_PRESETS)}
+              disabled={presetsLoading || !user || solarTermCount === 0}
+              className="flex-1 py-2.5 rounded-xl bg-bg-card border-[0.5px] border-border-strong text-text-secondary text-[13px] font-medium disabled:opacity-30 transition-opacity"
+            >
+              전체 삭제
+            </button>
           </div>
         </SettingsSection>
 

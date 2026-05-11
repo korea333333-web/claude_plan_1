@@ -62,15 +62,8 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleLogout() {
-    try {
-      await supabase.auth.signOut();
-    } catch {}
-    if (user?.provider === 'kakao') {
-      window.location.href = '/api/auth/kakao/logout';
-    } else {
-      window.location.href = '/login';
-    }
+  function handleLogout() {
+    window.location.href = '/api/auth/logout';
   }
 
   const notificationChannels = [

@@ -32,14 +32,13 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [addedPresets, setAddedPresets] = useState<Set<string>>(new Set());
   const [presetsLoading, setPresetsLoading] = useState(true);
-  const [showSolarTerms, setShowSolarTerms] = useState(false);
+  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('dalsaegim-theme') as 'dark' | 'light' | null;
     if (saved) setTheme(saved);
 
-    loadUser();
-    loadPresets();
+    loadUser().then(() => loadPresets());
     checkTelegramStatus();
     checkGcalStatus();
     checkKakaoStatus();
@@ -64,6 +63,7 @@ export default function SettingsPage() {
   }, []);
 
   async function loadUser() {
+    // 1) Supabase 세션 확인
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (authUser) {
       const prov = authUser.user_metadata?.provider || authUser.app_metadata?.provider;
@@ -73,9 +73,11 @@ export default function SettingsPage() {
         provider: prov === 'kakao' ? 'kakao' : 'google',
         avatarUrl: authUser.user_metadata?.avatar_url,
       });
+      setSupabaseUserId(authUser.id);
       return;
     }
 
+    // 2) 카카오 세션 확인
     try {
       const res = await fetch('/api/auth/kakao/session');
       const data = await res.json();
@@ -86,6 +88,19 @@ export default function SettingsPage() {
           provider: 'kakao',
           avatarUrl: data.user.profileImage,
         });
+
+        // 3) Supabase 세션 복구 시도
+        try {
+          const refreshRes = await fetch('/api/auth/refresh-session', { method: 'POST' });
+          const refreshData = await refreshRes.json();
+          if (refreshData.success && refreshData.userId) {
+            setSupabaseUserId(refreshData.userId);
+            // 쿠키가 갱신됐으므로 Supabase 클라이언트 세션도 갱신
+            await supabase.auth.getSession();
+          }
+        } catch {
+          console.error('[settings] Supabase session refresh failed');
+        }
       }
     } catch {
       // Kakao session check failed
@@ -237,12 +252,17 @@ export default function SettingsPage() {
   }
 
   async function loadPresets() {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) { setPresetsLoading(false); return; }
+    // supabaseUserId가 설정될 때까지 기다리지 않고, 직접 getUser 시도
+    let userId = supabaseUserId;
+    if (!userId) {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      userId = authUser?.id || null;
+    }
+    if (!userId) { setPresetsLoading(false); return; }
     const { data } = await supabase
       .from('anniversaries')
       .select('name, date_type, month, day')
-      .eq('user_id', authUser.id);
+      .eq('user_id', userId);
     if (data) {
       const all = [...HOLIDAY_PRESETS, ...SOLAR_TERM_PRESETS];
       const added = new Set<string>();
@@ -256,18 +276,24 @@ export default function SettingsPage() {
     setPresetsLoading(false);
   }
 
-  async function togglePreset(preset: PresetItem) {
+  async function getAuthUserId(): Promise<string | null> {
+    if (supabaseUserId) return supabaseUserId;
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) return;
+    return authUser?.id || null;
+  }
+
+  async function togglePreset(preset: PresetItem) {
+    const userId = await getAuthUserId();
+    if (!userId) return;
     const isAdded = addedPresets.has(preset.key);
     if (isAdded) {
       await supabase.from('anniversaries').delete()
-        .eq('user_id', authUser.id).eq('name', preset.name)
+        .eq('user_id', userId).eq('name', preset.name)
         .eq('date_type', preset.date_type).eq('month', preset.month).eq('day', preset.day);
       setAddedPresets(prev => { const n = new Set(prev); n.delete(preset.key); return n; });
     } else {
       await supabase.from('anniversaries').insert({
-        user_id: authUser.id, name: preset.name, date_type: preset.date_type,
+        user_id: userId, name: preset.name, date_type: preset.date_type,
         month: preset.month, day: preset.day, category: preset.category,
         repeat_type: 'yearly', start_year: null, is_shared: false, is_leap_month: false,
         alarms: [
@@ -281,12 +307,12 @@ export default function SettingsPage() {
   }
 
   async function addAllPresets(presets: PresetItem[]) {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) return;
+    const userId = await getAuthUserId();
+    if (!userId) return;
     const toAdd = presets.filter(p => !addedPresets.has(p.key));
     if (toAdd.length === 0) return;
     await supabase.from('anniversaries').insert(toAdd.map(p => ({
-      user_id: authUser.id, name: p.name, date_type: p.date_type,
+      user_id: userId, name: p.name, date_type: p.date_type,
       month: p.month, day: p.day, category: p.category,
       repeat_type: 'yearly', start_year: null, is_shared: false, is_leap_month: false,
       alarms: [
@@ -299,13 +325,13 @@ export default function SettingsPage() {
   }
 
   async function removeAllPresets(presets: PresetItem[]) {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) return;
+    const userId = await getAuthUserId();
+    if (!userId) return;
     const toRemove = presets.filter(p => addedPresets.has(p.key));
     if (toRemove.length === 0) return;
     for (const p of toRemove) {
       await supabase.from('anniversaries').delete()
-        .eq('user_id', authUser.id).eq('name', p.name)
+        .eq('user_id', userId).eq('name', p.name)
         .eq('date_type', p.date_type).eq('month', p.month).eq('day', p.day);
     }
     setAddedPresets(prev => { const n = new Set(prev); toRemove.forEach(p => n.delete(p.key)); return n; });
@@ -579,56 +605,38 @@ export default function SettingsPage() {
 
         {/* 24 Solar Terms */}
         <SettingsSection label={`24절기 (${solarTermCount}/${SOLAR_TERM_PRESETS.length})`}>
-          <button
-            onClick={() => setShowSolarTerms(!showSolarTerms)}
-            className="w-full flex items-center justify-between py-3 px-4 bg-bg-card border border-border-strong rounded-xl mb-3"
-          >
-            <span className="text-[15px] text-text-primary font-medium">
-              {showSolarTerms ? '접기' : '펼쳐서 보기'}
-            </span>
-            <svg
-              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-              className={`text-text-tertiary transition-transform ${showSolarTerms ? 'rotate-180' : ''}`}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-
-          {showSolarTerms && (
-            <div className="space-y-4">
-              {SOLAR_TERM_SEASONS.map((season) => (
-                <div key={season.label}>
-                  <div className="text-[12px] text-text-tertiary tracking-[1px] mb-2">{season.label}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {season.keys.map((key) => {
-                      const p = SOLAR_TERM_PRESETS.find(t => t.key === key)!;
-                      return (
-                        <button
-                          key={p.key}
-                          onClick={() => togglePreset(p)}
-                          disabled={presetsLoading || !user}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold border-[0.5px] transition-all disabled:opacity-40 ${
-                            addedPresets.has(p.key)
-                              ? 'bg-accent-gold-dim border-accent-gold text-accent-gold'
-                              : 'bg-bg-card border-border-strong text-text-secondary font-medium'
-                          }`}
-                        >
-                          {p.name}
-                          <span className="text-[10px] opacity-50">{p.month}/{p.day}</span>
-                          {addedPresets.has(p.key) && (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+          <div className="space-y-4">
+            {SOLAR_TERM_SEASONS.map((season) => (
+              <div key={season.label}>
+                <div className="text-[12px] text-text-tertiary tracking-[1px] font-semibold mb-2">{season.label}</div>
+                <div className="flex flex-wrap gap-2">
+                  {season.keys.map((key) => {
+                    const p = SOLAR_TERM_PRESETS.find(t => t.key === key)!;
+                    return (
+                      <button
+                        key={p.key}
+                        onClick={() => togglePreset(p)}
+                        disabled={presetsLoading || !user}
+                        className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[14px] font-semibold border-[0.5px] transition-all disabled:opacity-40 ${
+                          addedPresets.has(p.key)
+                            ? 'bg-accent-gold-dim border-accent-gold text-accent-gold'
+                            : 'bg-bg-card border-border-strong text-text-secondary font-medium'
+                        }`}
+                      >
+                        {p.name}
+                        <span className="text-[11px] opacity-60">{p.month}/{p.day}</span>
+                        {addedPresets.has(p.key) && (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-          )}
-
+              </div>
+            ))}
+          </div>
           <div className="flex gap-2 mt-3">
             <button
               onClick={() => addAllPresets(SOLAR_TERM_PRESETS)}

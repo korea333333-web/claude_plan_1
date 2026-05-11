@@ -68,7 +68,7 @@ export default function AddPage() {
 
     if (error) {
       console.error('Save failed:', error);
-      alert('저장에 실패했습니다');
+      alert(`저장 실패: ${error.message}\ncode: ${error.code}`);
     } else {
       router.push('/');
     }

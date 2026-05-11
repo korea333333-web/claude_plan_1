@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import InstallGuide from '@/components/InstallGuide';
 import { HOLIDAY_PRESETS, SOLAR_TERM_PRESETS, SOLAR_TERM_SEASONS, type PresetItem } from '@/lib/presets';
 
 interface UserProfile {
@@ -559,6 +560,11 @@ export default function SettingsPage() {
               <div className={`text-[15px] font-bold ${theme === 'light' ? 'text-accent-gold' : 'text-text-secondary'}`}>라이트</div>
             </button>
           </div>
+        </SettingsSection>
+
+        {/* Install to Home Screen */}
+        <SettingsSection label="앱 설치">
+          <InstallGuide />
         </SettingsSection>
 
         {/* Built-in Holidays */}

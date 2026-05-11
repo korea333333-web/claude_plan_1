@@ -5,6 +5,14 @@ import ThemeInit from "@/components/ThemeInit";
 export const metadata: Metadata = {
   title: "달새김 — 소중한 날을 달에 새기다",
   description: "음력/양력 기념일을 자동으로 관리하고 미리 알려주는 서비스",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "달새김",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
@@ -21,9 +29,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      </head>
       <body className="min-h-dvh flex flex-col">
         <ThemeInit />
         {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

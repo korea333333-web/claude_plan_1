@@ -4,6 +4,13 @@ export type DateType = 'lunar' | 'solar';
 export type Category = 'birthday' | 'memorial' | 'anniversary' | 'holiday' | 'other';
 export type RepeatType = 'yearly' | 'monthly' | 'once';
 
+export interface AlarmConfig {
+  enabled: boolean;
+  daysBefore: number;
+  hour: number;
+  minute: number;
+}
+
 export interface Anniversary {
   id: string;
   user_id: string;
@@ -17,6 +24,7 @@ export interface Anniversary {
   is_shared: boolean;
   is_leap_month: boolean;
   created_at: string;
+  alarms?: AlarmConfig[];
 }
 
 export interface AnniversaryWithDDay extends Anniversary {

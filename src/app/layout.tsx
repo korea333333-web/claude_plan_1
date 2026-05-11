@@ -19,7 +19,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try {
+              var t = localStorage.getItem('dalsaegim-theme');
+              if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+            } catch(e){}
+          })();
+        `}} />
+      </head>
       <body className="min-h-dvh flex flex-col">{children}</body>
     </html>
   );

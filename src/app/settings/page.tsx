@@ -28,6 +28,7 @@ export default function SettingsPage() {
   const [kakaoConnected, setKakaoConnected] = useState(false);
   const [kakaoLoading, setKakaoLoading] = useState(false);
   const [kakaoError, setKakaoError] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [builtInHolidays, setBuiltInHolidays] = useState({
     seollal: true,
     chuseok: true,
@@ -40,6 +41,9 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
+    const saved = localStorage.getItem('dalsaegim-theme') as 'dark' | 'light' | null;
+    if (saved) setTheme(saved);
+
     loadUser();
     checkTelegramStatus();
     checkGcalStatus();
@@ -227,6 +231,16 @@ export default function SettingsPage() {
     setTelegramLoading(false);
   }
 
+  function toggleTheme(newTheme: 'dark' | 'light') {
+    setTheme(newTheme);
+    localStorage.setItem('dalsaegim-theme', newTheme);
+    if (newTheme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }
+
   function handleLogout() {
     window.location.href = '/api/auth/logout';
   }
@@ -285,7 +299,7 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="px-6 pt-[env(safe-area-inset-top,16px)] pb-5">
         <h1 className="text-[34px] font-extrabold tracking-[-1.5px] leading-none pt-4">설정</h1>
-        <p className="text-[14px] text-text-secondary mt-2">알림 · 가족 · 계정 관리</p>
+        <p className="text-[14px] text-text-secondary mt-2">알림 · 테마 · 계정 관리</p>
       </div>
 
       {/* Account */}
@@ -430,6 +444,34 @@ export default function SettingsPage() {
           </div>
         </SettingsSection>
 
+
+        {/* Theme Toggle */}
+        <SettingsSection label="화면 테마">
+          <div className="flex gap-2.5">
+            <button
+              onClick={() => toggleTheme('dark')}
+              className={`flex-1 py-3.5 px-3 rounded-xl text-center border-[0.5px] transition-all ${
+                theme === 'dark'
+                  ? 'bg-accent-gold-dim border-accent-gold'
+                  : 'bg-bg-card border-border-strong'
+              }`}
+            >
+              <div className="text-[20px] mb-1.5">🌙</div>
+              <div className={`text-[15px] font-bold ${theme === 'dark' ? 'text-accent-gold' : 'text-text-secondary'}`}>다크</div>
+            </button>
+            <button
+              onClick={() => toggleTheme('light')}
+              className={`flex-1 py-3.5 px-3 rounded-xl text-center border-[0.5px] transition-all ${
+                theme === 'light'
+                  ? 'bg-accent-gold-dim border-accent-gold'
+                  : 'bg-bg-card border-border-strong'
+              }`}
+            >
+              <div className="text-[20px] mb-1.5">☀️</div>
+              <div className={`text-[15px] font-bold ${theme === 'light' ? 'text-accent-gold' : 'text-text-secondary'}`}>라이트</div>
+            </button>
+          </div>
+        </SettingsSection>
 
         {/* Built-in Holidays */}
         <SettingsSection label="기본 내장 명절">

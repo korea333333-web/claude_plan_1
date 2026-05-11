@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [gcalLoading, setGcalLoading] = useState(false);
   const [gcalError, setGcalError] = useState<string | null>(null);
   const [gcalEmail, setGcalEmail] = useState<string | null>(null);
+  const [gcalGuide, setGcalGuide] = useState(false);
   const [builtInHolidays, setBuiltInHolidays] = useState({
     seollal: true,
     chuseok: true,
@@ -100,6 +101,10 @@ export default function SettingsPage() {
 
   async function handleGcalConnect() {
     if (gcalLoading) return;
+    if (!gcalGuide) {
+      setGcalGuide(true);
+      return;
+    }
     setGcalLoading(true);
     setGcalError(null);
     try {
@@ -289,6 +294,23 @@ export default function SettingsPage() {
           {(telegramError || gcalError) && (
             <div className="mt-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30">
               <p className="text-[13px] text-red-400">{telegramError || gcalError}</p>
+            </div>
+          )}
+          {gcalGuide && !gcalConnected && (
+            <div className="mt-2 px-3.5 py-3 rounded-lg bg-[rgba(66,133,244,0.08)] border border-[rgba(66,133,244,0.2)]">
+              <p className="text-[14px] font-semibold text-[#4285f4] mb-2">구글 캘린더 연결 안내</p>
+              <div className="text-[13px] text-text-secondary space-y-1.5">
+                <p>1. 아래 버튼을 누르면 구글 로그인 화면이 열려요</p>
+                <p>2. <span className="text-text-primary font-medium">{'"'}Google에서 확인하지 않은 앱{'"'}</span> 경고가 나오면 <span className="text-text-primary font-medium">{'"'}계속{'"'}</span>을 눌러주세요</p>
+                <p>3. 캘린더 권한 <span className="text-text-primary font-medium">{'"'}허용{'"'}</span>을 누르면 연결 완료!</p>
+              </div>
+              <button
+                onClick={handleGcalConnect}
+                disabled={gcalLoading}
+                className="mt-3 w-full py-2.5 rounded-full bg-[#4285f4] text-white text-[14px] font-semibold disabled:opacity-50"
+              >
+                {gcalLoading ? '연결중...' : '구글 로그인으로 이동'}
+              </button>
             </div>
           )}
           {telegramDeepLink && !telegramConnected && (

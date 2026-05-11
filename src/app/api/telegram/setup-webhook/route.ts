@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get('secret');
-  if (secret !== process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(-8)) {
+  const validSecret = process.env.TELEGRAM_BOT_TOKEN?.slice(-8);
+  if (!secret || secret !== validSecret) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 

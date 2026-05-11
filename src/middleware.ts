@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const KAKAO_COOKIE_NAME = 'dalsaegim_kakao_session';
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -24,16 +26,19 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const publicPaths = ['/login', '/auth/callback', '/invite', '/', '/add', '/calendar', '/converter', '/settings'];
+  const hasKakaoSession = !!request.cookies.get(KAKAO_COOKIE_NAME)?.value;
+  const isAuthenticated = !!user || hasKakaoSession;
+
+  const publicPaths = ['/login', '/auth/callback', '/api/auth', '/invite', '/', '/add', '/calendar', '/converter', '/settings'];
   const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path));
 
-  if (!user && !isPublicPath) {
+  if (!isAuthenticated && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
-  if (user && request.nextUrl.pathname === '/login') {
+  if (isAuthenticated && request.nextUrl.pathname === '/login') {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);

@@ -8,28 +8,60 @@ import AnniversaryCard from '@/components/AnniversaryCard';
 import BottomNav from '@/components/BottomNav';
 import Link from 'next/link';
 
+interface AuthUser {
+  name: string;
+  provider: 'google' | 'kakao';
+  avatarUrl?: string;
+}
+
 export default function HomePage() {
   const [anniversaries, setAnniversaries] = useState<AnniversaryWithDDay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    loadAnniversaries();
+    loadUser();
   }, []);
 
-  async function loadAnniversaries() {
+  async function loadUser() {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-      useDemoData();
+    // 1. Check Supabase auth (Google login)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setAuthUser({
+        name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '사용자',
+        provider: 'google',
+        avatarUrl: user.user_metadata?.avatar_url,
+      });
+      await loadAnniversaries(user.id);
       return;
     }
 
+    // 2. Check Kakao session
+    try {
+      const res = await fetch('/api/auth/kakao/session');
+      const data = await res.json();
+      if (data.user) {
+        setAuthUser({
+          name: data.user.nickname,
+          provider: 'kakao',
+          avatarUrl: data.user.profileImage,
+        });
+      }
+    } catch {
+      // Kakao session check failed
+    }
+
+    useDemoData();
+  }
+
+  async function loadAnniversaries(userId: string) {
     const { data, error } = await supabase
       .from('anniversaries')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Failed to load anniversaries:', error);
@@ -81,11 +113,15 @@ export default function HomePage() {
                 <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
               </svg>
             </button>
-            <Link href="/settings" className="w-9 h-9 rounded-full bg-bg-card border border-border-card flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px] text-text-secondary">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M20 21a8 8 0 10-16 0" />
-              </svg>
+            <Link href="/settings" className="w-9 h-9 rounded-full bg-bg-card border border-border-card flex items-center justify-center overflow-hidden">
+              {authUser?.avatarUrl ? (
+                <img src={authUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-[18px] h-[18px] text-text-secondary">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M20 21a8 8 0 10-16 0" />
+                </svg>
+              )}
             </Link>
           </div>
         </div>

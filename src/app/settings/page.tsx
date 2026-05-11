@@ -8,7 +8,8 @@ import BottomNav from '@/components/BottomNav';
 interface UserProfile {
   name: string;
   email: string;
-  provider: string;
+  provider: 'google' | 'kakao';
+  avatarUrl?: string;
 }
 
 export default function SettingsPage() {
@@ -28,19 +29,42 @@ export default function SettingsPage() {
   }, []);
 
   async function loadUser() {
+    // 1. Check Supabase auth (Google)
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (authUser) {
       setUser({
         name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '사용자',
         email: authUser.email || '',
-        provider: authUser.app_metadata?.provider || 'email',
+        provider: 'google',
+        avatarUrl: authUser.user_metadata?.avatar_url,
       });
+      return;
+    }
+
+    // 2. Check Kakao session
+    try {
+      const res = await fetch('/api/auth/kakao/session');
+      const data = await res.json();
+      if (data.user) {
+        setUser({
+          name: data.user.nickname,
+          email: '',
+          provider: 'kakao',
+          avatarUrl: data.user.profileImage,
+        });
+      }
+    } catch {
+      // Kakao session check failed
     }
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut({ scope: 'global' });
-    window.location.href = '/login';
+    if (user?.provider === 'kakao') {
+      window.location.href = '/api/auth/kakao/logout';
+    } else {
+      await supabase.auth.signOut({ scope: 'global' });
+      window.location.href = '/login';
+    }
   }
 
   const notificationChannels = [
@@ -96,9 +120,13 @@ export default function SettingsPage() {
           className={`flex items-center gap-3.5 px-4 py-4 ${!user ? 'cursor-pointer' : ''}`}
           onClick={() => { if (!user) router.push('/login'); }}
         >
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-accent-gold to-accent-lunar flex items-center justify-center text-lg font-semibold text-bg-deep">
-            {initials}
-          </div>
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt="" className="w-11 h-11 rounded-full object-cover" />
+          ) : (
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-accent-gold to-accent-lunar flex items-center justify-center text-lg font-semibold text-bg-deep">
+              {initials}
+            </div>
+          )}
           <div className="flex-1">
             <div className="text-[15px] font-semibold">{user?.name || '로그인 필요'}</div>
             <div className="text-xs text-text-tertiary">
@@ -109,7 +137,7 @@ export default function SettingsPage() {
         </div>
       </Section>
 
-      {/* Logout - 계정 바로 아래 */}
+      {/* Logout */}
       {user && (
         <div className="px-5 -mt-4 mb-7">
           <button

@@ -6,6 +6,7 @@ export default function LoginPage() {
   const supabase = createClient();
 
   const handleLogin = async (provider: 'kakao' | 'google') => {
+    // Google 세션이 남아있을 수 있으므로 먼저 정리
     await supabase.auth.signOut();
 
     if (provider === 'kakao') {

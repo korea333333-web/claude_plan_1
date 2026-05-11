@@ -1,24 +1,23 @@
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-
-function derivePassword(kakaoId: string | number): string {
-  return crypto
-    .createHmac('sha256', process.env.KAKAO_CLIENT_SECRET!)
-    .update(String(kakaoId))
-    .digest('hex');
-}
+import { createSessionValue, COOKIE_NAME } from '@/lib/kakao-session';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
   const code = searchParams.get('code');
+  const state = searchParams.get('state');
   const error = searchParams.get('error');
 
   if (error || !code) {
     return NextResponse.redirect(`${origin}/login?error=kakao_denied`);
+  }
+
+  // Verify CSRF state
+  const cookieStore = await cookies();
+  const savedState = cookieStore.get('kakao_oauth_state')?.value;
+  if (!state || state !== savedState) {
+    return NextResponse.redirect(`${origin}/login?error=kakao_state_mismatch`);
   }
 
   const redirectUri = `${origin}/api/auth/kakao/callback`;
@@ -39,6 +38,7 @@ export async function GET(request: Request) {
   const tokenData = await tokenRes.json();
 
   if (!tokenData.access_token) {
+    console.error('[kakao-auth] token exchange failed:', tokenData);
     return NextResponse.redirect(`${origin}/login?error=kakao_token_failed`);
   }
 
@@ -62,79 +62,29 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=kakao_user_failed`);
   }
 
-  const email = `kakao_${kakaoId}@kakao.dalsaegim`;
-  const password = derivePassword(kakaoId);
-
-  // 3. Admin client for user creation
-  const adminSupabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-
-  // 4. Server client for session management (sets cookies)
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // ignore in Server Component context
-          }
-        },
-      },
-    }
-  );
-
-  const metadata = {
-    full_name: nickname,
-    name: nickname,
-    avatar_url: profileImage,
-    provider: 'kakao',
-    kakao_id: String(kakaoId),
-  };
-
-  // 5. Try to sign in (user might already exist)
-  let { data: signInData, error: signInError } =
-    await supabase.auth.signInWithPassword({ email, password });
-
-  if (signInError) {
-    // User doesn't exist — create with admin API
-    const { error: createError } = await adminSupabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: metadata,
-    });
-
-    if (createError) {
-      console.error('[kakao-auth] user creation failed:', createError.message);
-      return NextResponse.redirect(`${origin}/login?error=create_failed`);
-    }
-
-    // Sign in after creation
-    const result = await supabase.auth.signInWithPassword({ email, password });
-    signInData = result.data;
-    signInError = result.error;
-  }
-
-  if (signInError || !signInData.session) {
-    return NextResponse.redirect(`${origin}/login?error=signin_failed`);
-  }
-
-  // 6. Update user metadata with latest Kakao info
-  await adminSupabase.auth.admin.updateUserById(signInData.user.id, {
-    user_metadata: metadata,
+  // 3. Create self-managed session cookie
+  const sessionValue = createSessionValue({
+    kakaoId: String(kakaoId),
+    nickname,
+    profileImage,
   });
 
-  return NextResponse.redirect(`${origin}/`);
+  const response = NextResponse.redirect(`${origin}/`);
+
+  response.cookies.set(COOKIE_NAME, sessionValue, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60,
+  });
+
+  // Clean up state cookie
+  response.cookies.set('kakao_oauth_state', '', {
+    httpOnly: true,
+    path: '/',
+    maxAge: 0,
+  });
+
+  return response;
 }

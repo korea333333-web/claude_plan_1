@@ -274,28 +274,6 @@ export default function EditPage() {
           <p className="text-[13px] text-text-tertiary mt-2.5 text-center">기본 오전 9시 · 날짜와 시간 변경 가능</p>
         </FormField>
 
-        {/* Share */}
-        <FormField label="공유 범위">
-          <div className="flex bg-bg-card border border-border-strong rounded-full p-1">
-            <button
-              onClick={() => setIsShared(false)}
-              className={`flex-1 py-3 rounded-full text-[15px] font-medium text-center transition-all ${
-                !isShared ? 'bg-accent-gold text-bg-deep font-bold' : 'text-text-secondary'
-              }`}
-            >
-              개인
-            </button>
-            <button
-              onClick={() => setIsShared(true)}
-              className={`flex-1 py-3 rounded-full text-[15px] font-medium text-center transition-all ${
-                isShared ? 'bg-accent-gold text-bg-deep font-bold' : 'text-text-secondary'
-              }`}
-            >
-              가족 공유
-            </button>
-          </div>
-        </FormField>
-
         {/* Save */}
         <button
           onClick={handleSave}

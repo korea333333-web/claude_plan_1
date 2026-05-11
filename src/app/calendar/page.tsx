@@ -146,7 +146,7 @@ export default function CalendarPage() {
             {showDropdown && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowDropdown(false)} />
-                <div className="absolute top-full left-0 mt-2 z-40 bg-bg-card-strong border border-border-strong rounded-xl py-1.5 min-w-[180px] shadow-lg">
+                <div className="absolute top-full left-0 mt-2 z-40 bg-[#1c1f27] border border-border-strong rounded-xl py-1.5 min-w-[180px] shadow-[0_8px_30px_rgba(0,0,0,0.6)]">
                   {viewLabels.map(v => (
                     <button
                       key={v.key}

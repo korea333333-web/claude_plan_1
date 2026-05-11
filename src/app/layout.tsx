@@ -1,12 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
-
-const notoSansKR = Noto_Sans_KR({
-  variable: "--font-noto-sans-kr",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "달새김 — 소중한 날을 달에 새기다",
@@ -17,7 +10,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0f1117",
+  themeColor: "#0a0d14",
 };
 
 export default function RootLayout({
@@ -26,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={notoSansKR.variable}>
+    <html lang="ko">
       <body className="min-h-dvh flex flex-col">{children}</body>
     </html>
   );

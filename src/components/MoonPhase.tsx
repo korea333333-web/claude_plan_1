@@ -1,11 +1,22 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 interface Props {
   lunarDay: number;
   size?: number;
 }
 
 export default function MoonPhase({ lunarDay, size = 64 }: Props) {
+  const [isLight, setIsLight] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsLight(document.documentElement.getAttribute('data-theme') === 'light');
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
   const r = 38;
   const cx = 50;
   const cy = 50;
@@ -32,13 +43,13 @@ export default function MoonPhase({ lunarDay, size = 64 }: Props) {
         </radialGradient>
 
         <radialGradient id={`${id}-dark`} cx="50%" cy="50%">
-          <stop offset="0%" stopColor="#2a2d38" />
-          <stop offset="100%" stopColor="#14161e" />
+          <stop offset="0%" stopColor={isLight ? '#ede9e0' : '#2a2d38'} />
+          <stop offset="100%" stopColor={isLight ? '#e5e0d6' : '#14161e'} />
         </radialGradient>
 
         <radialGradient id={`${id}-earthshine`} cx="50%" cy="50%">
-          <stop offset="0%" stopColor="rgba(80,90,120,0.12)" />
-          <stop offset="100%" stopColor="rgba(40,45,60,0.05)" />
+          <stop offset="0%" stopColor={isLight ? 'rgba(139,111,71,0.08)' : 'rgba(80,90,120,0.12)'} />
+          <stop offset="100%" stopColor={isLight ? 'rgba(139,111,71,0.03)' : 'rgba(40,45,60,0.05)'} />
         </radialGradient>
 
         <clipPath id={`${id}-circle`}>

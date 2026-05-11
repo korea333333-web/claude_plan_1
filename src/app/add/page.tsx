@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase';
 import type { Category, RepeatType } from '@/lib/anniversary';
 import BottomNav from '@/components/BottomNav';
+import WheelPicker from '@/components/WheelPicker';
 
 const categories: { value: Category; label: string }[] = [
   { value: 'birthday', label: '생일' },
@@ -26,8 +27,10 @@ export default function AddPage() {
 
   const [name, setName] = useState('');
   const [dateType, setDateType] = useState<'lunar' | 'solar'>('lunar');
-  const [month, setMonth] = useState('');
-  const [day, setDay] = useState('');
+  const [month, setMonth] = useState(1);
+  const [day, setDay] = useState(1);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const [category, setCategory] = useState<Category>('birthday');
   const [repeatType, setRepeatType] = useState<RepeatType>('yearly');
   const [startYear, setStartYear] = useState('');
@@ -36,7 +39,7 @@ export default function AddPage() {
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
-    if (!name || !month || !day) return;
+    if (!name) return;
     setSaving(true);
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -50,8 +53,8 @@ export default function AddPage() {
       user_id: user.id,
       name,
       date_type: dateType,
-      month: parseInt(month),
-      day: parseInt(day),
+      month,
+      day,
       category,
       repeat_type: repeatType,
       start_year: startYear ? parseInt(startYear) : null,
@@ -118,25 +121,9 @@ export default function AddPage() {
 
         {/* Date */}
         <FormField label="날짜">
-          <div className="flex gap-2.5">
-            <input
-              type="number"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-              placeholder="월"
-              min="1"
-              max="12"
-              className="flex-1 px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl text-[15px] text-text-primary text-center placeholder:text-text-tertiary outline-none focus:border-accent-gold transition-colors"
-            />
-            <input
-              type="number"
-              value={day}
-              onChange={(e) => setDay(e.target.value)}
-              placeholder="일"
-              min="1"
-              max="31"
-              className="flex-1 px-4 py-3.5 bg-bg-card-strong border border-border-strong rounded-xl text-[15px] text-text-primary text-center placeholder:text-text-tertiary outline-none focus:border-accent-gold transition-colors"
-            />
+          <div className="flex gap-3">
+            <WheelPicker items={months} value={month} onChange={setMonth} suffix="월" />
+            <WheelPicker items={days} value={day} onChange={setDay} suffix="일" />
           </div>
         </FormField>
 
@@ -241,7 +228,7 @@ export default function AddPage() {
         {/* Save */}
         <button
           onClick={handleSave}
-          disabled={!name || !month || !day || saving}
+          disabled={!name || saving}
           className="w-full py-4 rounded-full bg-accent-gold text-bg-deep text-base font-bold disabled:opacity-40 transition-opacity mt-4 mb-8"
         >
           {saving ? '저장 중...' : '저장하기'}
